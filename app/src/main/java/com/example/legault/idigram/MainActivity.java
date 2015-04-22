@@ -9,8 +9,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -44,6 +48,52 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         imgMain = (ImageView) findViewById(R.id.effect_main);
         src = BitmapFactory.decodeResource(getResources(), R.drawable.image);
+        tabSelected(R.id.tab1);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+
+        inflater.inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+    public void tabSelected(int tab)
+    {
+        LinearLayout ll= (LinearLayout) findViewById(R.id.espacio);
+        TextView t1 = (TextView) findViewById(R.id.tab1);
+        TextView t2 = (TextView) findViewById(R.id.tab2);
+        TextView t3 = (TextView) findViewById(R.id.tab3);
+        switch(tab)
+        {
+            case R.id.tab1:
+                t1.setBackgroundColor(Color.RED);
+                t2.setBackgroundColor(Color.BLUE);
+                t3.setBackgroundColor(Color.BLUE);
+                //ll.removeAllViews();
+                break;
+            case R.id.tab2:
+                t1.setBackgroundColor(Color.BLUE);
+                t2.setBackgroundColor(Color.RED);
+                t3.setBackgroundColor(Color.BLUE);
+                break;
+            case R.id.tab3:
+                t1.setBackgroundColor(Color.BLUE);
+                t2.setBackgroundColor(Color.BLUE);
+                t3.setBackgroundColor(Color.RED);
+                break;
+        }
+
+
+
+    }
+
+    public void tabClicked(View v){
+
+
+        tabSelected(v.getId());
+
+
     }
 
     public void buttonClicked(View v){
