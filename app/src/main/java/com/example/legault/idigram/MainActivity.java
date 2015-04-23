@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +36,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -42,13 +44,30 @@ public class MainActivity extends ActionBarActivity {
     private ImageView imgMain ;
     private static final int SELECT_PHOTO = 100;
     private Bitmap src;
+    private HashMap<String,Bitmap> imgFiltered;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         imgMain = (ImageView) findViewById(R.id.effect_main);
         src = BitmapFactory.decodeResource(getResources(), R.drawable.image);
+        imgFiltered=new HashMap<String,Bitmap>();
+
         tabSelected(R.id.tab1);
+
+
+    }
+
+    private void insertarEnFiltros(String nombreFiltro,Bitmap preview,int Id)
+    {
+        LinearLayout ll= (LinearLayout) findViewById(R.id.espaciofiltros);
+        View vv = View.inflate(this, R.layout.filt, null);
+        ImageView iv=(ImageView)vv.findViewById(R.id.imagenFilt);
+        TextView tv=(TextView)vv.findViewById(R.id.nombreFilt);
+        iv.setImageBitmap(preview);
+        iv.setId(Id);
+        tv.setText(nombreFiltro);
+        ll.addView(vv, new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
     }
 
     @Override
@@ -58,34 +77,120 @@ public class MainActivity extends ActionBarActivity {
         inflater.inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
     }
-    public void tabSelected(int tab)
+
+    private void llenarMuestras()
     {
-        LinearLayout ll= (LinearLayout) findViewById(R.id.espacio);
+        ImageFilters imgFilter = new ImageFilters();
+
+
+        LinearLayout ll= (LinearLayout) findViewById(R.id.espaciofiltros);
+        ll.removeAllViews();
+    	   /*imgFiltered.put("blackFilter", imgFilter.applyBlackFilter(src));
+    	   imgFiltered.put("boost1", imgFilter.applyBoostEffect(src, 1, 40));
+    	   imgFiltered.put("boost2", imgFilter.applyBoostEffect(src, 2, 30));
+    	   imgFiltered.put("boost3", imgFilter.applyBoostEffect(src, 3, 67));
+
+
+
+    	   imgFiltered.put("brightness", imgFilter.applyBrightnessEffect(src, 80));
+    	   imgFiltered.put("colorRed", imgFilter.applyColorFilterEffect(src, 255, 0, 0));
+    	   imgFiltered.put("colorGreen", imgFilter.applyColorFilterEffect(src, 0, 255, 0));
+    	   imgFiltered.put("colorBlue", imgFilter.applyColorFilterEffect(src, 0, 0, 255));
+
+
+    	   imgFiltered.put("decColorDepth64", imgFilter.applyDecreaseColorDepthEffect(src, 64));
+    	   imgFiltered.put("decColorDepth32", imgFilter.applyDecreaseColorDepthEffect(src, 32));
+    	   imgFiltered.put("contrast", imgFilter.applyContrastEffect(src, 70));
+    	   imgFiltered.put("emboss", imgFilter.applyEmbossEffect(src));
+    	   imgFiltered.put("engrave", imgFilter.applyEngraveEffect(src));
+
+
+
+    	   imgFiltered.put("flea", imgFilter.applyFleaEffect(src));
+    	   imgFiltered.put("gaussianBlur", imgFilter.applyGaussianBlurEffect(src));
+    	   imgFiltered.put("gamma", imgFilter.applyGammaEffect(src, 1.8, 1.8, 1.8));
+
+    	   imgFiltered.put("greyscale", imgFilter.applyGreyscaleEffect(src));
+    	   imgFiltered.put("hue", imgFilter.applyHueFilter(src, 2));
+    	   imgFiltered.put("invert", imgFilter.applyInvertEffect(src));
+
+
+
+    	   imgFiltered.put("meanremoval", imgFilter.applyMeanRemovalEffect(src));
+    	   imgFiltered.put("roundCorner", imgFilter.applyRoundCornerEffect(src, 45));
+    	   imgFiltered.put("saturation", imgFilter.applySaturationFilter(src, 1));
+
+
+    	   imgFiltered.put("sepia", imgFilter.applySepiaToningEffect(src, 10, 1.5, 0.6, 0.12));
+    	   imgFiltered.put("sepiaGreen", imgFilter.applySepiaToningEffect(src, 10, 0.88, 2.45, 1.43));
+    	   imgFiltered.put("sepiaBlue", imgFilter.applySepiaToningEffect(src, 10, 1.2, 0.87, 2.1));
+
+
+    	   imgFiltered.put("smooth", imgFilter.applySmoothEffect(src, 100));
+    	   imgFiltered.put("shadingCyan", imgFilter.applyShadingFilter(src, Color.CYAN));
+    	   imgFiltered.put("shadingYellow", imgFilter.applyShadingFilter(src, Color.YELLOW));
+    	   imgFiltered.put("shadingGreen", imgFilter.applyShadingFilter(src, Color.GREEN));*/
+
+
+        if(!imgFiltered.containsKey("gaussianBlur"))imgFiltered.put("gaussianBlur", imgFilter.applyGaussianBlurEffect(src));
+        insertarEnFiltros("Gaussian B",imgFiltered.get("gaussianBlur"),6);
+
+        if(!imgFiltered.containsKey("sepia"))imgFiltered.put("sepia", imgFilter.applySepiaToningEffect(src, 10, 1.5, 0.6, 0.12));
+        insertarEnFiltros("Sepia",imgFiltered.get("sepia"),5);
+
+        if(!imgFiltered.containsKey("blackFilter"))imgFiltered.put("blackFilter", imgFilter.applyBlackFilter(src));
+        insertarEnFiltros("Granulado",imgFiltered.get("blackFilter"),4);
+
+        if(!imgFiltered.containsKey("greyscale"))imgFiltered.put("greyscale", imgFilter.applyGreyscaleEffect(src));
+        insertarEnFiltros("Grises",imgFiltered.get("greyscale"),1);
+
+        if(!imgFiltered.containsKey("tint"))imgFiltered.put("tint", imgFilter.applyTintEffect(src, 100));
+        insertarEnFiltros("Tinta",imgFiltered.get("tint"),2);
+
+        if(!imgFiltered.containsKey("waterMark")) imgFiltered.put("waterMark", imgFilter.applyWaterMarkEffect(src, "IDI-Gram", 200, 200, Color.GREEN, 80, 24, false));
+        insertarEnFiltros("Agua",imgFiltered.get("waterMark"),3);
+    }
+
+    public void tabSelected(int tab) {
+        LinearLayout ll = (LinearLayout) findViewById(R.id.espacio);
         TextView t1 = (TextView) findViewById(R.id.tab1);
         TextView t2 = (TextView) findViewById(R.id.tab2);
         TextView t3 = (TextView) findViewById(R.id.tab3);
-        switch(tab)
-        {
+        View vv;
+        switch (tab) {
             case R.id.tab1:
                 t1.setBackgroundColor(Color.RED);
                 t2.setBackgroundColor(Color.BLUE);
                 t3.setBackgroundColor(Color.BLUE);
-                //ll.removeAllViews();
+                ll.removeAllViews();
+                vv = View.inflate(this, R.layout.filtros, null);
+                ll.addView(vv, new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
+                llenarMuestras();
                 break;
             case R.id.tab2:
                 t1.setBackgroundColor(Color.BLUE);
                 t2.setBackgroundColor(Color.RED);
                 t3.setBackgroundColor(Color.BLUE);
+                ll.removeAllViews();
+                vv = View.inflate(this, R.layout.ajustes, null);
+                ll.addView(vv, new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
+                SeekBar sb1 = (SeekBar) findViewById(R.id.seekBar1);
+                sb1.setProgress(25);
+                SeekBar sb2 = (SeekBar) findViewById(R.id.seekBar2);
+                sb2.setProgress(50);
+                SeekBar sb3 = (SeekBar) findViewById(R.id.seekBar3);
+                sb3.setProgress(75);
                 break;
             case R.id.tab3:
                 t1.setBackgroundColor(Color.BLUE);
                 t2.setBackgroundColor(Color.BLUE);
                 t3.setBackgroundColor(Color.RED);
+                ll.removeAllViews();
+                 imgMain.setImageBitmap(src);
+
+
                 break;
         }
-
-
-
     }
 
     public void tabClicked(View v){
@@ -98,16 +203,67 @@ public class MainActivity extends ActionBarActivity {
 
     public void buttonClicked(View v){
 
-        Toast.makeText(this, "Processing...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Procesando...", Toast.LENGTH_SHORT).show();
         ImageFilters imgFilter = new ImageFilters();
+        int id=v.getId();
+        System.out.println(id);
         if(v.getId() == R.id.btn_pick_img){
             Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
             photoPickerIntent.setType("image/*");
             startActivityForResult(photoPickerIntent, SELECT_PHOTO);
         }
+
+        else if(id==1) //escala de grises
+        {
+            Bitmap img = imgFiltered.get("greyscale");
+            if (img != null) imgMain.setImageBitmap(img);
+
+        }
+        else if(id==2) //tinta azul
+        {
+            Bitmap img = imgFiltered.get("tint");
+            if (img != null) imgMain.setImageBitmap(img);
+
+        }
+        else if(id==3) //marca de agua
+        {
+            Bitmap img = imgFiltered.get("waterMark");
+            if (img != null) imgMain.setImageBitmap(img);
+
+        }
+        else if(id==4) //Granulado
+        {
+            Bitmap img = imgFiltered.get("blackFilter");
+            if (img != null) imgMain.setImageBitmap(img);
+
+        }
+        else if(id==5) //Sepia
+        {
+            Bitmap img = imgFiltered.get("sepia");
+            if (img != null) imgMain.setImageBitmap(img);
+
+        }
+        else if(id==6) //Gaussian Blur
+        {
+            Bitmap img = imgFiltered.get("gaussianBlur");
+            if (img != null) imgMain.setImageBitmap(img);
+
+        }
+        else if(id==7) //escala de grises
+        {
+            Bitmap img = imgFiltered.get("greyscale");
+            if (img != null) imgMain.setImageBitmap(img);
+
+        }
+        else if(id==8) //escala de grises
+        {
+            Bitmap img = imgFiltered.get("greyscale");
+            if (img != null) imgMain.setImageBitmap(img);
+
+        }
 //        else if(v.getId() == R.id.effect_highlight)
 //            saveBitmap(imgFilter.applyHighlightEffect(src), "effect_highlight");
-        else if(v.getId() == R.id.effect_black)
+       /* else if(v.getId() == R.id.effect_black)
             saveBitmap(imgFilter.applyBlackFilter(src),"effect_black");
         else if(v.getId() == R.id.effect_boost_1)
             saveBitmap(imgFilter.applyBoostEffect(src, 1, 40),"effect_boost_1");
@@ -170,7 +326,7 @@ public class MainActivity extends ActionBarActivity {
         else if(v.getId() == R.id.effect_tint)
             saveBitmap(imgFilter.applyTintEffect(src, 100),"effect_tint");
         else if(v.getId() == R.id.effect_watermark)
-            saveBitmap(imgFilter.applyWaterMarkEffect(src, "kpbird.com", 200, 200, Color.GREEN, 80, 24, false),"effect_watermark");
+            saveBitmap(imgFilter.applyWaterMarkEffect(src, "kpbird.com", 200, 200, Color.GREEN, 80, 24, false),"effect_watermark");*/
 
     }
 
@@ -197,6 +353,8 @@ public class MainActivity extends ActionBarActivity {
                     if(bmp !=null){
                         src = bmp;
                         imgMain.setImageBitmap(src);
+                        imgFiltered.clear();
+                        llenarMuestras();
                     }
                 }
         }
