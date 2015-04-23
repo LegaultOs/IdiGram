@@ -453,7 +453,7 @@ public class MainActivity extends ActionBarActivity {
                         contrasteBrillo=showing;
                         contraste=1;
                         brillo=1;
-                        llenarMuestras();
+                        if(findViewById(R.id.espaciofiltros)!=null)llenarMuestras();
                     }
                 }
         }
