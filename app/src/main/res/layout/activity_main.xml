@@ -15,14 +15,28 @@
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:orientation="vertical" >
+    <LinearLayout
+        android:id="@+id/layoutbotones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
 
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal" >
         <Button
             android:id="@+id/btn_pick_img"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="0.5"
             android:onClick="buttonClicked"
-            android:text="Pick Image" />
-
+            android:text="Selecciona imagen" />
+        <Button
+            android:id="@+id/btn_apply_img"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:onClick="buttonClicked"
+            android:text="Aplica cambios" />
+    </LinearLayout>
         <ImageView
             android:id="@+id/effect_main"
             android:layout_width="match_parent"

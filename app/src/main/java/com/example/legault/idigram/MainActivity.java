@@ -43,8 +43,9 @@ public class MainActivity extends ActionBarActivity {
 
     private ImageView imgMain ;
     private static final int SELECT_PHOTO = 100;
-    private Bitmap src;
+    private Bitmap src,showing,contrasteBrillo;
     private HashMap<String,Bitmap> imgFiltered;
+    private int brillo=1,contraste=1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +53,8 @@ public class MainActivity extends ActionBarActivity {
         imgMain = (ImageView) findViewById(R.id.effect_main);
         src = BitmapFactory.decodeResource(getResources(), R.drawable.image);
         imgFiltered=new HashMap<String,Bitmap>();
-
+        showing=src;
+        contrasteBrillo=showing;
         tabSelected(R.id.tab1);
 
 
@@ -85,6 +87,8 @@ public class MainActivity extends ActionBarActivity {
 
         LinearLayout ll= (LinearLayout) findViewById(R.id.espaciofiltros);
         ll.removeAllViews();
+
+        insertarEnFiltros("Normal",src,0);
     	   /*imgFiltered.put("blackFilter", imgFilter.applyBlackFilter(src));
     	   imgFiltered.put("boost1", imgFilter.applyBoostEffect(src, 1, 40));
     	   imgFiltered.put("boost2", imgFilter.applyBoostEffect(src, 2, 30));
@@ -148,7 +152,7 @@ public class MainActivity extends ActionBarActivity {
         insertarEnFiltros("Tinta",imgFiltered.get("tint"),2);
 
         if(!imgFiltered.containsKey("waterMark")) imgFiltered.put("waterMark", imgFilter.applyWaterMarkEffect(src, "IDI-Gram", 200, 200, Color.GREEN, 80, 24, false));
-        insertarEnFiltros("Agua",imgFiltered.get("waterMark"),3);
+        insertarEnFiltros("WaterMark",imgFiltered.get("waterMark"),3);
     }
 
     public void tabSelected(int tab) {
@@ -159,6 +163,7 @@ public class MainActivity extends ActionBarActivity {
         View vv;
         switch (tab) {
             case R.id.tab1:
+                Toast.makeText(this, "Procesando vista previa...", Toast.LENGTH_SHORT).show();
                 t1.setBackgroundColor(Color.RED);
                 t2.setBackgroundColor(Color.BLUE);
                 t3.setBackgroundColor(Color.BLUE);
@@ -166,6 +171,7 @@ public class MainActivity extends ActionBarActivity {
                 vv = View.inflate(this, R.layout.filtros, null);
                 ll.addView(vv, new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
                 llenarMuestras();
+
                 break;
             case R.id.tab2:
                 t1.setBackgroundColor(Color.BLUE);
@@ -174,12 +180,46 @@ public class MainActivity extends ActionBarActivity {
                 ll.removeAllViews();
                 vv = View.inflate(this, R.layout.ajustes, null);
                 ll.addView(vv, new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
-                SeekBar sb1 = (SeekBar) findViewById(R.id.seekBar1);
-                sb1.setProgress(25);
-                SeekBar sb2 = (SeekBar) findViewById(R.id.seekBar2);
-                sb2.setProgress(50);
-                SeekBar sb3 = (SeekBar) findViewById(R.id.seekBar3);
-                sb3.setProgress(75);
+
+                SeekBar sb1 = (SeekBar) findViewById(R.id.seekBar1);//Contraste
+                sb1.setProgress(contraste+100);
+                sb1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    int progressChanged = 0;
+
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
+                        progressChanged = progress;
+                    }
+
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                        // TODO Auto-generated method stub
+                    }
+
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        contraste=progressChanged-100;
+                        camibiarContrBrillo();
+                    }
+                });
+
+                SeekBar sb2 = (SeekBar) findViewById(R.id.seekBar2);//Brillo
+                sb2.setProgress(brillo+100);
+                sb2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    int progressChanged = 0;
+
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
+                        progressChanged = progress;
+                    }
+
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                        // TODO Auto-generated method stub
+                    }
+
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        brillo=progressChanged-100;
+                        camibiarContrBrillo();
+
+                    }
+                });
+
                 break;
             case R.id.tab3:
                 t1.setBackgroundColor(Color.BLUE);
@@ -193,6 +233,16 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    private void camibiarContrBrillo()
+    {
+
+        ImageFilters imgFilter = new ImageFilters();
+        Bitmap bm = imgFilter.applyBrightnessEffect(showing, brillo);
+        bm = imgFilter.applyContrastEffect(bm, contraste);
+        imgMain.setImageBitmap(bm);
+        contrasteBrillo=bm;
+
+    }
     public void tabClicked(View v){
 
 
@@ -206,59 +256,104 @@ public class MainActivity extends ActionBarActivity {
         Toast.makeText(this, "Procesando...", Toast.LENGTH_SHORT).show();
         ImageFilters imgFilter = new ImageFilters();
         int id=v.getId();
+        contraste=1;
+        brillo=1;
         System.out.println(id);
         if(v.getId() == R.id.btn_pick_img){
             Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
             photoPickerIntent.setType("image/*");
             startActivityForResult(photoPickerIntent, SELECT_PHOTO);
         }
+        else if(v.getId() == R.id.btn_apply_img){
+            src=showing;
+            imgFiltered.clear();
+            if(findViewById(R.id.espaciofiltros)!=null)llenarMuestras();
+            else {
+                src=contrasteBrillo;
+                SeekBar sb1 = (SeekBar) findViewById(R.id.seekBar1);
+                sb1.setProgress(100);
+                SeekBar sb2 = (SeekBar) findViewById(R.id.seekBar2);
+                sb2.setProgress(100);
+            }
+        }
 
+
+        else if(id==0) //Normal
+        {
+         imgMain.setImageBitmap(src);
+         showing=src;
+
+        }
         else if(id==1) //escala de grises
         {
             Bitmap img = imgFiltered.get("greyscale");
-            if (img != null) imgMain.setImageBitmap(img);
+            if (img != null) {
+                imgMain.setImageBitmap(img);
+                showing=img;
+            }
+
 
         }
         else if(id==2) //tinta azul
         {
             Bitmap img = imgFiltered.get("tint");
-            if (img != null) imgMain.setImageBitmap(img);
+            if (img != null) {
+                imgMain.setImageBitmap(img);
+                showing=img;
+            }
 
         }
         else if(id==3) //marca de agua
         {
             Bitmap img = imgFiltered.get("waterMark");
-            if (img != null) imgMain.setImageBitmap(img);
-
+            if (img != null) {
+                imgMain.setImageBitmap(img);
+                showing=img;
+            }
         }
         else if(id==4) //Granulado
         {
             Bitmap img = imgFiltered.get("blackFilter");
-            if (img != null) imgMain.setImageBitmap(img);
+            if (img != null) {
+                imgMain.setImageBitmap(img);
+                showing=img;
+            }
 
         }
         else if(id==5) //Sepia
         {
             Bitmap img = imgFiltered.get("sepia");
-            if (img != null) imgMain.setImageBitmap(img);
+            if (img != null) {
+                imgMain.setImageBitmap(img);
+                showing=img;
+            }
 
         }
         else if(id==6) //Gaussian Blur
         {
             Bitmap img = imgFiltered.get("gaussianBlur");
-            if (img != null) imgMain.setImageBitmap(img);
+            if (img != null) {
+                imgMain.setImageBitmap(img);
+                showing=img;
+            }
 
         }
         else if(id==7) //escala de grises
         {
             Bitmap img = imgFiltered.get("greyscale");
-            if (img != null) imgMain.setImageBitmap(img);
+            if (img != null) {
+                imgMain.setImageBitmap(img);
+                showing=img;
+            }
 
         }
         else if(id==8) //escala de grises
         {
             Bitmap img = imgFiltered.get("greyscale");
-            if (img != null) imgMain.setImageBitmap(img);
+            if (img != null) {
+                imgMain.setImageBitmap(img);
+                showing=img;
+            }
 
         }
 //        else if(v.getId() == R.id.effect_highlight)
@@ -354,6 +449,10 @@ public class MainActivity extends ActionBarActivity {
                         src = bmp;
                         imgMain.setImageBitmap(src);
                         imgFiltered.clear();
+                        showing=src;
+                        contrasteBrillo=showing;
+                        contraste=1;
+                        brillo=1;
                         llenarMuestras();
                     }
                 }
