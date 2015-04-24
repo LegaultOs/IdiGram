@@ -1,6 +1,5 @@
-package com.example.legault.idigram;
+package com.legaultOs.idigram;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,6 +11,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -22,20 +22,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 
-import android.app.Activity;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.Toast;
+import com.example.legault.idigram.R;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.HashMap;
 
 
@@ -50,11 +38,13 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        File f =new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/");
+        if(!f.exists())f.mkdir();
         imgMain = (ImageView) findViewById(R.id.effect_main);
         src = BitmapFactory.decodeResource(getResources(), R.drawable.image);
         imgFiltered=new HashMap<String,Bitmap>();
         showing=src;
-        contrasteBrillo=showing;
+        contrasteBrillo=null;
         tabSelected(R.id.tab1);
 
 
@@ -226,7 +216,9 @@ public class MainActivity extends ActionBarActivity {
                 t2.setBackgroundColor(Color.BLUE);
                 t3.setBackgroundColor(Color.RED);
                 ll.removeAllViews();
-                 imgMain.setImageBitmap(src);
+                vv = View.inflate(this, R.layout.guardar, null);
+                ll.addView(vv, new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
+
 
 
                 break;
@@ -258,18 +250,27 @@ public class MainActivity extends ActionBarActivity {
         int id=v.getId();
         contraste=1;
         brillo=1;
+
         System.out.println(id);
-        if(v.getId() == R.id.btn_pick_img){
+        if(id!=R.id.btn_pick_img && id!=R.id.btn_apply_img )// querra decir que hemos clickado a un filtro
+        {
+            contrasteBrillo=null;
+
+        }
+        if(id == R.id.btn_pick_img){
             Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
             photoPickerIntent.setType("image/*");
             startActivityForResult(photoPickerIntent, SELECT_PHOTO);
         }
-        else if(v.getId() == R.id.btn_apply_img){
-            src=showing;
+        else if(id == R.id.btn_apply_img){
+            if(contrasteBrillo!=null){
+                src=contrasteBrillo;
+                showing=src;
+                contrasteBrillo=null;}
+            else src=showing;
             imgFiltered.clear();
             if(findViewById(R.id.espaciofiltros)!=null)llenarMuestras();
-            else {
-                src=contrasteBrillo;
+            else if(findViewById(R.id.espacioajustes)!=null) {
                 SeekBar sb1 = (SeekBar) findViewById(R.id.seekBar1);
                 sb1.setProgress(100);
                 SeekBar sb2 = (SeekBar) findViewById(R.id.seekBar2);
@@ -425,17 +426,6 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    private void saveBitmap(Bitmap bmp,String fileName){
-        try {
-            imgMain.setImageBitmap(bmp);
-            File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + fileName+".png");
-            FileOutputStream fos = new FileOutputStream(f);
-            bmp.compress(Bitmap.CompressFormat.PNG,90,fos);
-        }
-        catch(Exception ex){
-            ex.printStackTrace();
-        }
-    }
 
 
     @Override
@@ -450,13 +440,40 @@ public class MainActivity extends ActionBarActivity {
                         imgMain.setImageBitmap(src);
                         imgFiltered.clear();
                         showing=src;
-                        contrasteBrillo=showing;
+
                         contraste=1;
                         brillo=1;
                         if(findViewById(R.id.espaciofiltros)!=null)llenarMuestras();
                     }
                 }
         }
+    }
+
+    public void guardarImagen(View v)
+    {
+       EditText et= (EditText)findViewById(R.id.editText);
+
+       if(!src.equals(showing) || contrasteBrillo!=null)
+       {
+           Toast.makeText(this, "Hay cambios sin aplicar", Toast.LENGTH_SHORT).show();
+
+       }
+       else
+       {
+           try {
+
+               File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/" + et.getText().toString()+".png");
+               FileOutputStream fos = new FileOutputStream(f);
+               src.compress(Bitmap.CompressFormat.PNG,90,fos);
+               Toast.makeText(this, "Guardado correctamente en " +f.getAbsolutePath() , Toast.LENGTH_SHORT).show();
+           }
+           catch(Exception ex){
+               ex.printStackTrace();
+               Toast.makeText(this, "Ha ocurrido un problema guardando", Toast.LENGTH_SHORT).show();
+           }
+
+       }
+
     }
 
     private Bitmap decodeUri(Uri selectedImage)  {

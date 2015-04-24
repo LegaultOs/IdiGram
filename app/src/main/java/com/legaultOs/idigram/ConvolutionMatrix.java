@@ -1,4 +1,4 @@
-package com.example.legault.idigram;
+package com.legaultOs.idigram;
 
 /**
  * Created by Legault on 20/04/2015.

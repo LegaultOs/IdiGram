@@ -1,24 +1,8 @@
-package com.example.legault.idigram;
+package com.legaultOs.idigram;
 
 /**
  * Created by Legault on 20/04/2015.
  */
-
-import android.graphics.Bitmap;
-import android.graphics.BlurMaskFilter;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Shader;
-
-import java.util.Random;
-
 
 import android.graphics.Bitmap;
 import android.graphics.BlurMaskFilter;
