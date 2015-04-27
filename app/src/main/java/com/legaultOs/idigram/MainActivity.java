@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
@@ -38,10 +39,12 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Bundle bundle = getIntent().getExtras();
         File f =new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/");
         if(!f.exists())f.mkdir();
         imgMain = (ImageView) findViewById(R.id.effect_main);
-        src = BitmapFactory.decodeResource(getResources(), R.drawable.image);
+        src = decodeUri((Uri) bundle.get("pathImagen"));
+        imgMain.setImageBitmap(src);
         imgFiltered=new HashMap<String,Bitmap>();
         showing=src;
         contrasteBrillo=null;
@@ -79,6 +82,14 @@ public class MainActivity extends ActionBarActivity {
         ll.removeAllViews();
 
         insertarEnFiltros("Normal",src,0);
+        new ParaTask()
+                .execute(new Params("tint", "Tinta", src, 0, 0, 0, 100, 0,1));
+        new ParaTask()
+                .execute(new Params("gauss", "Gaussian", src, 0, 0, 0, 0, 0,2));
+        new ParaTask()
+                .execute(new Params("inv", "Inversa", src, 0, 0, 0, 0, 0,3));
+        new ParaTask()
+                .execute(new Params("grey", "Gris", src, 0, 0, 0, 0, 0,4));
     	   /*imgFiltered.put("blackFilter", imgFilter.applyBlackFilter(src));
     	   imgFiltered.put("boost1", imgFilter.applyBoostEffect(src, 1, 40));
     	   imgFiltered.put("boost2", imgFilter.applyBoostEffect(src, 2, 30));
@@ -126,7 +137,7 @@ public class MainActivity extends ActionBarActivity {
     	   imgFiltered.put("shadingGreen", imgFilter.applyShadingFilter(src, Color.GREEN));*/
 
 
-        if(!imgFiltered.containsKey("gaussianBlur"))imgFiltered.put("gaussianBlur", imgFilter.applyGaussianBlurEffect(src));
+       /* if(!imgFiltered.containsKey("gaussianBlur"))imgFiltered.put("gaussianBlur", imgFilter.applyGaussianBlurEffect(src));
         insertarEnFiltros("Gaussian B",imgFiltered.get("gaussianBlur"),6);
 
         if(!imgFiltered.containsKey("sepia"))imgFiltered.put("sepia", imgFilter.applySepiaToningEffect(src, 10, 1.5, 0.6, 0.12));
@@ -142,7 +153,7 @@ public class MainActivity extends ActionBarActivity {
         insertarEnFiltros("Tinta",imgFiltered.get("tint"),2);
 
         if(!imgFiltered.containsKey("waterMark")) imgFiltered.put("waterMark", imgFilter.applyWaterMarkEffect(src, "IDI-Gram", 200, 200, Color.GREEN, 80, 24, false));
-        insertarEnFiltros("WaterMark",imgFiltered.get("waterMark"),3);
+        insertarEnFiltros("WaterMark",imgFiltered.get("waterMark"),3);*/
     }
 
     public void tabSelected(int tab) {
@@ -153,7 +164,7 @@ public class MainActivity extends ActionBarActivity {
         View vv;
         switch (tab) {
             case R.id.tab1:
-                Toast.makeText(this, "Procesando vista previa...", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(this, "Procesando vista previa...", Toast.LENGTH_SHORT).show();
                 t1.setBackgroundColor(Color.RED);
                 t2.setBackgroundColor(Color.BLUE);
                 t3.setBackgroundColor(Color.BLUE);
@@ -245,7 +256,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void buttonClicked(View v){
 
-        Toast.makeText(this, "Procesando...", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Procesando...", Toast.LENGTH_SHORT).show();
         ImageFilters imgFilter = new ImageFilters();
         int id=v.getId();
         contraste=1;
@@ -261,6 +272,7 @@ public class MainActivity extends ActionBarActivity {
             Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
             photoPickerIntent.setType("image/*");
             startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+
         }
         else if(id == R.id.btn_apply_img){
             if(contrasteBrillo!=null){
@@ -285,17 +297,7 @@ public class MainActivity extends ActionBarActivity {
          showing=src;
 
         }
-        else if(id==1) //escala de grises
-        {
-            Bitmap img = imgFiltered.get("greyscale");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
-
-
-        }
-        else if(id==2) //tinta azul
+        else if(id==1) //tinta azul
         {
             Bitmap img = imgFiltered.get("tint");
             if (img != null) {
@@ -303,18 +305,28 @@ public class MainActivity extends ActionBarActivity {
                 showing=img;
             }
 
+
         }
-        else if(id==3) //marca de agua
+        else if(id==2) //Gaussian blur
         {
-            Bitmap img = imgFiltered.get("waterMark");
+            Bitmap img = imgFiltered.get("gauss");
+            if (img != null) {
+                imgMain.setImageBitmap(img);
+                showing=img;
+            }
+
+        }
+        else if(id==3) //inversa
+        {
+            Bitmap img = imgFiltered.get("inv");
             if (img != null) {
                 imgMain.setImageBitmap(img);
                 showing=img;
             }
         }
-        else if(id==4) //Granulado
+        else if(id==4) //Grises
         {
-            Bitmap img = imgFiltered.get("blackFilter");
+            Bitmap img = imgFiltered.get("grey");
             if (img != null) {
                 imgMain.setImageBitmap(img);
                 showing=img;
@@ -440,7 +452,7 @@ public class MainActivity extends ActionBarActivity {
                         imgMain.setImageBitmap(src);
                         imgFiltered.clear();
                         showing=src;
-
+                        Toast.makeText(this, "Procesando vista previa...", Toast.LENGTH_SHORT).show();
                         contraste=1;
                         brillo=1;
                         if(findViewById(R.id.espaciofiltros)!=null)llenarMuestras();
@@ -510,5 +522,85 @@ public class MainActivity extends ActionBarActivity {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private class Pair {
+        String tipo;
+        String label;
+        Bitmap bm;
+        int id;
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getTipo() {
+            return tipo;
+        }
+
+        public Bitmap getBm() {
+            return bm;
+        }
+        public int getId() {
+            return id;
+        }
+
+        public Pair(String label, String tipo, Bitmap bm,int id) {
+            super();
+            this.label = label;
+            this.bm = bm;
+            this.tipo = tipo;
+            this.id=id;
+        }
+
+    }
+
+    private class ParaTask extends AsyncTask<Params, Void, Pair> {
+        protected Pair doInBackground(Params... arg0) {
+            ImageFilters imgFilter = new ImageFilters();
+            Bitmap bm = arg0[0].getBm();
+            String tipo = arg0[0].getTipo();
+            String label = arg0[0].getLabel();
+            double R = arg0[0].getR();
+            double G = arg0[0].getG();
+            double B = arg0[0].getB();
+            float percent = arg0[0].getPercent();
+            double valor = arg0[0].getValor();
+            int id = arg0[0].getId();
+            Bitmap result = null;
+            if (imgFiltered.containsKey(tipo))
+                return new Pair(label, tipo, null,id);
+            switch (tipo) {
+
+                case "tint":
+                    result = imgFilter.applyTintEffect(bm, valor);
+                    break;
+                case "gauss":
+                    result = imgFilter.applyGaussianBlurEffect(bm);
+                    break;
+                case "inv":
+                    result = imgFilter.applyInvertEffect(bm);
+                    break;
+                case "grey":
+                    result = imgFilter.applyGreyscaleEffect(bm);
+                    break;
+
+                default:
+                    return null;
+
+            }
+            imgFiltered.put(tipo, result);
+
+            return new Pair(label, tipo, result,id);
+        }
+
+        protected void onPostExecute(Pair result) {
+            // Pass the result data back to the main activity
+            if (result != null)
+                insertarEnFiltros(result.getLabel(),
+                        imgFiltered.get(result.getTipo()),result.getId());
+
+        }
+
     }
 }

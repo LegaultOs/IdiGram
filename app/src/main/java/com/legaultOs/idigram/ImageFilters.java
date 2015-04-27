@@ -525,7 +525,7 @@ public class ImageFilters {
     public static final double HALF_CIRCLE_DEGREE = 180d;
     public static final double RANGE = 256d;
 
-    public  Bitmap applyTintEffect(Bitmap src, int degree) {
+    public  Bitmap applyTintEffect(Bitmap src, double degree) {
 
         int width = src.getWidth();
         int height = src.getHeight();
