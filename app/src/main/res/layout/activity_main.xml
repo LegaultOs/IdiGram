@@ -40,7 +40,7 @@
         <ImageView
             android:id="@+id/effect_main"
             android:layout_width="match_parent"
-            android:layout_height="310dp"
+            android:layout_height="300dp"
             android:layout_above="@+id/layouttabs"
             android:layout_marginBottom="5dp"
              />

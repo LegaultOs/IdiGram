@@ -15,6 +15,7 @@
         android:id="@+id/nombreFilt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center|center_vertical" />
+        android:gravity="center|center_vertical"
+        android:textColor="#AAAAC6"/>
 
 </LinearLayout>

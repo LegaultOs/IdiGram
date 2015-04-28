@@ -200,7 +200,7 @@ public class ImageFilters {
     }
 
 
-    public  Bitmap applySepiaToningEffect(Bitmap src, int depth, double red, double green, double blue) {
+    public  Bitmap applySepiaToningEffect(Bitmap src, double depth, double red, double green, double blue) {
         // image size
         int width = src.getWidth();
         int height = src.getHeight();
@@ -368,7 +368,7 @@ public class ImageFilters {
         return bmOut;
     }
 
-    public Bitmap applyGaussianBlurEffect(Bitmap src) {
+    public Bitmap applyGaussianBlurEffect(Bitmap src,double valor) {
         double[][] GaussianBlurConfig = new double[][] {
                 { 1, 2, 1 },
                 { 2, 4, 2 },
@@ -376,31 +376,32 @@ public class ImageFilters {
         };
         ConvolutionMatrix convMatrix = new ConvolutionMatrix(3);
         convMatrix.applyConfig(GaussianBlurConfig);
-        convMatrix.Factor = 16;
+        convMatrix.Factor = valor;
         convMatrix.Offset = 0;
+
         return ConvolutionMatrix.computeConvolution3x3(src, convMatrix);
     }
 
-    public  Bitmap applySharpenEffect(Bitmap src, double weight) {
+    public  Bitmap applySharpenEffect(Bitmap src) {
         double[][] SharpConfig = new double[][] {
-                { 0 , -2    , 0  },
-                { -2, weight, -2 },
-                { 0 , -2    , 0  }
+                { -1 , -1    , -1  },
+                { -1, 9, -1 },
+                { -1 , -1    , -1  }
         };
         ConvolutionMatrix convMatrix = new ConvolutionMatrix(3);
         convMatrix.applyConfig(SharpConfig);
-        convMatrix.Factor = weight - 8;
+        convMatrix.Factor = 1;
         return ConvolutionMatrix.computeConvolution3x3(src, convMatrix);
     }
 
-    public  Bitmap applyMeanRemovalEffect(Bitmap src) {
-        double[][] MeanRemovalConfig = new double[][] {
+    public  Bitmap applyEdgeDetectionEffect(Bitmap src) {
+        double[][] EdgeDetectionConfig = new double[][] {
                 { -1 , -1, -1 },
-                { -1 ,  9, -1 },
+                { -1 ,  8, -1 },
                 { -1 , -1, -1 }
         };
         ConvolutionMatrix convMatrix = new ConvolutionMatrix(3);
-        convMatrix.applyConfig(MeanRemovalConfig);
+        convMatrix.applyConfig(EdgeDetectionConfig);
         convMatrix.Factor = 1;
         convMatrix.Offset = 0;
         return ConvolutionMatrix.computeConvolution3x3(src, convMatrix);
@@ -416,14 +417,14 @@ public class ImageFilters {
     }
     public  Bitmap applyEmbossEffect(Bitmap src) {
         double[][] EmbossConfig = new double[][] {
-                { -1 ,  0, -1 },
-                {  0 ,  4,  0 },
-                { -1 ,  0, -1 }
+                { -2 ,  0, 0 },
+                {  0 ,  1,  0 },
+                { 0 ,  0, 2 }
         };
         ConvolutionMatrix convMatrix = new ConvolutionMatrix(3);
         convMatrix.applyConfig(EmbossConfig);
         convMatrix.Factor = 1;
-        convMatrix.Offset = 127;
+        convMatrix.Offset = 0;
         return ConvolutionMatrix.computeConvolution3x3(src, convMatrix);
     }
 
@@ -699,6 +700,9 @@ public class ImageFilters {
         float[] HSV = new float[3];
         // get pixel array from source
         source.getPixels(pixels, 0, width, 0, 0, width, height);
+        float lv= ((float)level)/100;
+        System.out.println(lv);
+
 
         int index = 0;
         // iteration through pixels
@@ -709,8 +713,12 @@ public class ImageFilters {
                 // convert to HSV
                 Color.colorToHSV(pixels[index], HSV);
                 // increase Saturation level
-                HSV[1] *= level;
+
+                HSV[1] = lv;
+
                 HSV[1] = (float) Math.max(0.0, Math.min(HSV[1], 1.0));
+
+
                 // take color back
                 pixels[index] |= Color.HSVToColor(HSV);
             }
