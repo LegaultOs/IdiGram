@@ -4,18 +4,15 @@
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
 
-    <item android:id="@+id/itemid_0"
-        android:title="Action Item 0"
+    <item android:id="@+id/help"
+        android:title="Help"
         android:icon="@drawable/ic_launcher"
         android:orderInCategory="0"
         android:showAsAction="ifRoom|withText" />
-    <item android:id="@+id/itemid_1"
-        android:title="Action Item 1"
+    <item android:id="@+id/about"
+        android:title="About"
         android:orderInCategory="0"
         android:showAsAction="ifRoom|withText" />
-    <item android:id="@+id/itemid_2"
-        android:title="Action Item 2"
-        android:orderInCategory="0"
-        android:showAsAction="ifRoom|withText" />
+
 
 </menu>

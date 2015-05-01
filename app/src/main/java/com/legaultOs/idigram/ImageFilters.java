@@ -16,6 +16,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.util.Log;
 
 import java.util.Random;
 
@@ -696,36 +697,41 @@ public class ImageFilters {
         // get image size
         int width = source.getWidth();
         int height = source.getHeight();
-        int[] pixels = new int[width * height];
+        Bitmap bmOut = Bitmap.createBitmap(width, height, source.getConfig());
         float[] HSV = new float[3];
-        // get pixel array from source
-        source.getPixels(pixels, 0, width, 0, 0, width, height);
-        float lv= ((float)level)/100;
-        System.out.println(lv);
+
+        Log.d("level ",Integer.toString(level));
+        float lv;
+        if(level>=10)lv= ((float)level)/10;
+        else {
+
+            lv= ((float)50+level)/100;
+        }
+        Log.d("level asfloat",Float.toString(lv));
 
 
-        int index = 0;
+        int pixel;
         // iteration through pixels
         for(int y = 0; y < height; ++y) {
             for(int x = 0; x < width; ++x) {
-                // get current index in 2D-matrix
-                index = y * width + x;
+                pixel = source.getPixel(x, y);
                 // convert to HSV
-                Color.colorToHSV(pixels[index], HSV);
+                Color.colorToHSV(pixel, HSV);
                 // increase Saturation level
+                HSV[1] = lv*HSV[1];
 
-                HSV[1] = lv;
 
                 HSV[1] = (float) Math.max(0.0, Math.min(HSV[1], 1.0));
 
 
                 // take color back
-                pixels[index] |= Color.HSVToColor(HSV);
+                bmOut.setPixel(x,y,Color.HSVToColor(HSV));
+
             }
         }
         // output bitmap
-        Bitmap bmOut = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        bmOut.setPixels(pixels, 0, width, 0, 0, width, height);
+
+
         return bmOut;
     }
 
