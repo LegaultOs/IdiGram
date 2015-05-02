@@ -12,13 +12,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +46,9 @@ public class MainActivity extends ActionBarActivity {
     private HashMap<String,Bitmap> imgFiltered;
     private ArrayList<String> vista;
     private int brillo=1,brillant=1,contraste=1,contant=1,saturacion=1,satant=1;
+    private int imgSize=400;
+    private Bitmap.CompressFormat defaultFormat=Bitmap.CompressFormat.PNG;
+    private Uri pathImagen;
 
     int posFilt;
 
@@ -55,7 +61,8 @@ public class MainActivity extends ActionBarActivity {
         File f =new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/");
         if(!f.exists())f.mkdir();
         imgMain = (ImageView) findViewById(R.id.effect_main);
-        src = decodeUri((Uri) bundle.get("pathImagen"));
+        pathImagen=(Uri) bundle.get("pathImagen");
+        src = decodeUri(pathImagen);
         ultimo=src;
         imgMain.setImageBitmap(src);
         imgFiltered=new HashMap<String,Bitmap>();
@@ -63,6 +70,30 @@ public class MainActivity extends ActionBarActivity {
         vista= new ArrayList<String>();
 
         contrasteBrillo=null;
+
+
+
+
+        imgMain.setOnTouchListener(new View.OnTouchListener()
+        {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                if (event.getAction() == MotionEvent.ACTION_DOWN){
+                    imgMain.setImageBitmap(src);
+                }
+
+                else if (event.getAction() == MotionEvent.ACTION_UP){
+                   if(contrasteBrillo!=null) imgMain.setImageBitmap(contrasteBrillo);
+                    else imgMain.setImageBitmap(showing);
+                }
+
+
+                // TODO Auto-generated method stub
+                return false;
+            }
+        });
         tabSelected(R.id.tab1);
 
 
@@ -71,11 +102,18 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
+        AlertDialog.Builder al =  new AlertDialog.Builder(this);
         switch (item.getItemId()) {
             case R.id.help:
                 new AlertDialog.Builder(this)
                         .setTitle("Help")
-                        .setMessage("-Primera linea \n-Segunda Linea \n-Tercera Linea")
+                        .setMessage("-Filtros: Podemos seleccionar un filtro para aplicarlo a la imagen actual " +
+                                "\n\n-Ajustes: podemos cambiar los niveles de Saturacion,Contraste y brillo de la imagen " +
+                                "\n\n-Guardar: guardaremos la foto en formato que hayamos indicado en Settings (por defecto .PNG) con el nombre dado una vez no haya cambios pendientes en la foto" +
+                                "\n\n-Cambiar foto: cambiaremos la foto actual por otra de nuestra galeria" +
+                                "\n\n-Aplicar cambios: Aplicaremos los filtros y los ajustes a la foto inicial y podremos aplicarle mas encima" +
+                                "\n\n-Deshacer Cambios: Si tenemos un filtro escogido pero no aplicado nos deshará ese filtro, Si no tenemos ningun filtro ni ningun ajuste aplicado, volveremos a la versión anterior, antes de aplicar cambios" +
+                                "\n\n-Tocar la foto: nos servirá para ver la foto antes y despues del filtro aplicado")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // continue with delete
@@ -85,7 +123,7 @@ public class MainActivity extends ActionBarActivity {
                         .show();
                 return true;
             case R.id.about:
-                new AlertDialog.Builder(this)
+                al
                         .setTitle("About")
                         .setMessage("Hecho por: Oscar Carod \ne-mail:oscaracso90@gmail.com \nIDI")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -96,7 +134,36 @@ public class MainActivity extends ActionBarActivity {
                         .setIcon(android.R.drawable.ic_dialog_email)
                         .show();
                 return true;
+            case R.id.action_settings:
+                LayoutInflater layoutInflater = LayoutInflater.from(this);
+                final View menuSettings=layoutInflater.inflate(R.layout.settings,null);
+                TextView tv=(TextView)menuSettings.findViewById(R.id.editText2);
+                tv.setText(Integer.toString(imgSize));
+                RadioGroup rg =(RadioGroup) menuSettings.findViewById(R.id.radiogroup1);
+               if(defaultFormat.equals(Bitmap.CompressFormat.PNG)) rg.check(R.id.png);
+                else rg.check(R.id.jpeg);
+                al
+                        .setTitle("Settings")
+                        .setView(menuSettings);
+                al        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        TextView tv=(TextView)menuSettings.findViewById(R.id.editText2);
+                        if(imgSize!=Integer.parseInt( tv.getText().toString())){
+                            imgSize = Integer.parseInt( tv.getText().toString());
+                            src = decodeUri(pathImagen);
+                            imgFiltered.clear();
+                            tabSelected(R.id.tab1);
 
+                        }
+                        RadioGroup rg =(RadioGroup) menuSettings.findViewById(R.id.radiogroup1);
+                        if(rg.getCheckedRadioButtonId()==R.id.png) defaultFormat= Bitmap.CompressFormat.PNG;
+                        else defaultFormat= Bitmap.CompressFormat.JPEG;
+                    }
+                })
+                        .setIcon(android.R.drawable.ic_menu_manage)
+                        .show();
+
+                return true;
         }
         return true;
     }
@@ -246,7 +313,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         contant=contraste;
                         contraste=progressChanged-100;
-                        Bitmap bm= camibiarContrBrilloSat(showing);
+                        Bitmap bm= camibiarContrBrilloSat(showing,false);
                         imgMain.setImageBitmap(bm);
                     }
                 });
@@ -267,7 +334,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         brillant=brillo;
                         brillo=progressChanged-100;
-                        Bitmap bm= camibiarContrBrilloSat(showing);
+                        Bitmap bm= camibiarContrBrilloSat(showing,false);
                         imgMain.setImageBitmap(bm);
 
                     }
@@ -288,7 +355,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         satant=saturacion;
                         saturacion=progressChanged-40;
-                        Bitmap bm= camibiarContrBrilloSat(showing);
+                        Bitmap bm= camibiarContrBrilloSat(showing,false);
                         imgMain.setImageBitmap(bm);
 
                     }
@@ -309,14 +376,14 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private Bitmap camibiarContrBrilloSat(Bitmap vit)
+    private Bitmap camibiarContrBrilloSat(Bitmap vit, boolean loading)
     {
 
         ImageFilters imgFilter = new ImageFilters();
         Bitmap bm = imgFilter.applySaturationFilter(vit, saturacion);
         bm = imgFilter.applyContrastEffect(bm, contraste);
         bm = imgFilter.applyBrightnessEffect(bm, brillo);
-        contrasteBrillo=bm;
+        if(!loading)contrasteBrillo=bm;
         return bm;
 
     }
@@ -553,8 +620,9 @@ public class MainActivity extends ActionBarActivity {
         switch(requestCode) {
             case SELECT_PHOTO:
                 if(resultCode == RESULT_OK){
-                    Uri selectedImage = data.getData();
-                    Bitmap bmp = decodeUri(selectedImage);
+                    pathImagen = data.getData();
+
+                    Bitmap bmp = decodeUri(pathImagen);
                     if(bmp !=null){
                         src = bmp;
                         ultimo=src;
@@ -574,29 +642,33 @@ public class MainActivity extends ActionBarActivity {
 
     public void guardarImagen(View v)
     {
+        String extension;
        EditText et= (EditText)findViewById(R.id.editText);
+       if(!et.getText().toString().replace(" ","").equals("")) {
+           if (!src.equals(showing) || contrasteBrillo != null) {
+               Toast.makeText(this, "Hay cambios sin aplicar", Toast.LENGTH_SHORT).show();
 
-       if(!src.equals(showing) || contrasteBrillo!=null)
-       {
-           Toast.makeText(this, "Hay cambios sin aplicar", Toast.LENGTH_SHORT).show();
+           } else {
+               try {
 
-       }
-       else
-       {
-           try {
+                  if(defaultFormat.equals(Bitmap.CompressFormat.PNG)) extension=".png";
+                  else extension=".jpeg";
+                   File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/" + et.getText().toString() + extension);
+                   FileOutputStream fos = new FileOutputStream(f);
+                   src.compress(defaultFormat, 90, fos);
 
-               File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/" + et.getText().toString()+".png");
-               FileOutputStream fos = new FileOutputStream(f);
-               src.compress(Bitmap.CompressFormat.PNG,90,fos);
-               Toast.makeText(this, "Guardado correctamente en " +f.getAbsolutePath() , Toast.LENGTH_SHORT).show();
+                   Toast.makeText(this, "Guardado correctamente en " + f.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+               } catch (Exception ex) {
+                   ex.printStackTrace();
+                   Toast.makeText(this, "Ha ocurrido un problema guardando", Toast.LENGTH_SHORT).show();
+               }
+
            }
-           catch(Exception ex){
-               ex.printStackTrace();
-               Toast.makeText(this, "Ha ocurrido un problema guardando", Toast.LENGTH_SHORT).show();
-           }
-
        }
-
+        else
+       {
+           Toast.makeText(this, "Tienes que ponerle un nombre al archivo", Toast.LENGTH_SHORT).show();
+       }
     }
 
     private Bitmap decodeUri(Uri selectedImage)  {
@@ -609,14 +681,14 @@ public class MainActivity extends ActionBarActivity {
             BitmapFactory.decodeStream(getContentResolver().openInputStream(selectedImage), null, o);
 
             // The new size we want to scale to
-            final int REQUIRED_SIZE = 300;
+            final int REQUIRED_SIZE = imgSize;
 
             // Find the correct scale value. It should be the power of 2.
             int width_tmp = o.outWidth, height_tmp = o.outHeight;
             int scale = 1;
             while (true) {
                 if (width_tmp / 2 < REQUIRED_SIZE
-                        && height_tmp / 2 < REQUIRED_SIZE) {
+                        || height_tmp / 2 < REQUIRED_SIZE) {
                     break;
                 }
                 width_tmp /= 2;
@@ -724,7 +796,7 @@ public class MainActivity extends ActionBarActivity {
                     result=bm;
 
             }
-            if(contraste!=1 || brillo!=1 || saturacion!=1)result=camibiarContrBrilloSat(result);
+            if(contraste!=1 || brillo!=1 || saturacion!=1)result=camibiarContrBrilloSat(result,true);
             imgFiltered.put(tipo, result);
             long stopTime = System.currentTimeMillis();
             long elapsedTime = stopTime - startTime;
