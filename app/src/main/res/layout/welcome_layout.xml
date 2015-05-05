@@ -13,13 +13,11 @@
         android:layout_marginTop="200dp"
         android:src="@drawable/nombre"/>
 
-
-
     <Button
         android:id="@+id/escull"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="selecImatge"
-        android:text="Escoge una imagen" />
-
+        android:text="Escoge una imagen"
+        android:layout_gravity="center_horizontal" />
 </LinearLayout>

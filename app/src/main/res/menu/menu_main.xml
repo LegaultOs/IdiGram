@@ -8,11 +8,12 @@
         android:title="Help"
         android:icon="@drawable/ic_launcher"
         android:orderInCategory="0"
-        android:showAsAction="ifRoom|withText" />
+        android:showAsAction="never"
+        />
     <item android:id="@+id/about"
         android:title="About"
         android:orderInCategory="0"
-        android:showAsAction="ifRoom|withText" />
+        android:showAsAction="never" />
 
 
 </menu>

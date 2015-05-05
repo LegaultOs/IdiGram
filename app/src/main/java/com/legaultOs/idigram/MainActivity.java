@@ -26,6 +26,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -36,19 +38,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class MainActivity extends ActionBarActivity {
 
     private ImageView imgMain ;
     private static final int SELECT_PHOTO = 100;
-    private Bitmap src,showing,contrasteBrillo,loading,ultimo;
+    private Bitmap src,showing,contrasteBrillo,loading,ultimo,thumbnail,ultimoThu;
     private HashMap<String,Bitmap> imgFiltered;
     private ArrayList<String> vista;
     private int brillo=1,brillant=1,contraste=1,contant=1,saturacion=1,satant=1;
     private int imgSize=400;
     private Bitmap.CompressFormat defaultFormat=Bitmap.CompressFormat.PNG;
     private Uri pathImagen;
+    private Bitmap bim[];
 
     int posFilt;
 
@@ -62,7 +67,10 @@ public class MainActivity extends ActionBarActivity {
         if(!f.exists())f.mkdir();
         imgMain = (ImageView) findViewById(R.id.effect_main);
         pathImagen=(Uri) bundle.get("pathImagen");
-        src = decodeUri(pathImagen);
+        src = decodeUri(pathImagen,false);
+
+        thumbnail=escalar(src,true);
+
         ultimo=src;
         imgMain.setImageBitmap(src);
         imgFiltered=new HashMap<String,Bitmap>();
@@ -85,7 +93,7 @@ public class MainActivity extends ActionBarActivity {
                 }
 
                 else if (event.getAction() == MotionEvent.ACTION_UP){
-                   if(contrasteBrillo!=null) imgMain.setImageBitmap(contrasteBrillo);
+                    if(contrasteBrillo!=null) imgMain.setImageBitmap(contrasteBrillo);
                     else imgMain.setImageBitmap(showing);
                 }
 
@@ -107,16 +115,16 @@ public class MainActivity extends ActionBarActivity {
             case R.id.help:
                 new AlertDialog.Builder(this)
                         .setTitle("Help")
-                        .setMessage("-Filtros: Podemos seleccionar un filtro para aplicarlo a la imagen actual " +
-                                "\n\n-Ajustes: podemos cambiar los niveles de Saturacion,Contraste y brillo de la imagen " +
-                                "\n\n-Guardar: guardaremos la foto en formato que hayamos indicado en Settings (por defecto .PNG) con el nombre dado una vez no haya cambios pendientes en la foto" +
-                                "\n\n-Cambiar foto: cambiaremos la foto actual por otra de nuestra galeria" +
-                                "\n\n-Aplicar cambios: Aplicaremos los filtros y los ajustes a la foto inicial y podremos aplicarle mas encima" +
-                                "\n\n-Deshacer Cambios: Si tenemos un filtro escogido pero no aplicado nos deshará ese filtro, Si no tenemos ningun filtro ni ningun ajuste aplicado, volveremos a la versión anterior, antes de aplicar cambios" +
-                                "\n\n-Tocar la foto: nos servirá para ver la foto antes y despues del filtro aplicado")
+                        .setMessage("-Filtros: Podemos seleccionar un filtro para aplicarlo a la imagen actual. " +
+                                "\n\n-Ajustes: Podemos cambiar los niveles de Saturacion,Contraste y brillo de la imagen. " +
+                                "\n\n-Guardar: Guardaremos la foto en formato que hayamos indicado en Settings (por defecto .PNG) con el nombre dado una vez no haya cambios pendientes en la foto." +
+                                "\n\n-Cambiar foto: Cambiaremos la foto actual por otra de nuestra galeria." +
+                                "\n\n-Aplicar cambios: Aplicaremos los filtros y los ajustes a la foto inicial y podremos aplicarle más encima." +
+                                "\n\n-Deshacer Cambios: Si tenemos un filtro escogido pero no aplicado, nos deshará ese filtro, si no tenemos ningún filtro ni ningún ajuste aplicado, volveremos a la versión anterior, antes de aplicar cambios." +
+                                "\n\n-Tocar la foto: Nos servirá para ver la foto antes y después del filtro aplicado.")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                // continue with delete
+
                             }
                         })
                         .setIcon(android.R.drawable.ic_dialog_info)
@@ -125,7 +133,7 @@ public class MainActivity extends ActionBarActivity {
             case R.id.about:
                 al
                         .setTitle("About")
-                        .setMessage("Hecho por: Oscar Carod \ne-mail:oscaracso90@gmail.com \nIDI")
+                        .setMessage("Hecho por: Oscar Carod \nE-mail:oscaracso90@gmail.com \nIDI")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // continue with delete
@@ -140,7 +148,7 @@ public class MainActivity extends ActionBarActivity {
                 TextView tv=(TextView)menuSettings.findViewById(R.id.editText2);
                 tv.setText(Integer.toString(imgSize));
                 RadioGroup rg =(RadioGroup) menuSettings.findViewById(R.id.radiogroup1);
-               if(defaultFormat.equals(Bitmap.CompressFormat.PNG)) rg.check(R.id.png);
+                if(defaultFormat.equals(Bitmap.CompressFormat.PNG)) rg.check(R.id.png);
                 else rg.check(R.id.jpeg);
                 al
                         .setTitle("Settings")
@@ -150,7 +158,8 @@ public class MainActivity extends ActionBarActivity {
                         TextView tv=(TextView)menuSettings.findViewById(R.id.editText2);
                         if(imgSize!=Integer.parseInt( tv.getText().toString())){
                             imgSize = Integer.parseInt( tv.getText().toString());
-                            src = decodeUri(pathImagen);
+                            src = decodeUri(pathImagen,false);
+                            thumbnail=escalar(src,true);
                             imgFiltered.clear();
                             tabSelected(R.id.tab1);
 
@@ -172,16 +181,16 @@ public class MainActivity extends ActionBarActivity {
     {
         LinearLayout ll= (LinearLayout) findViewById(R.id.espaciofiltros);
         if(ll!=null){
-        View vv = View.inflate(this, R.layout.filt, null);
-        ImageView iv=(ImageView)vv.findViewById(R.id.imagenFilt);
-        TextView tv=(TextView)vv.findViewById(R.id.nombreFilt);
-        iv.setImageBitmap(preview);
-        iv.setId(Id);
-        tv.setText(nombreFiltro);
-        if(!vista.contains(nombreFiltro)){
-            ll.addView(vv, posFilt ,new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
-            vista.add(nombreFiltro);}
-        posFilt++;}
+            View vv = View.inflate(this, R.layout.filt, null);
+            ImageView iv=(ImageView)vv.findViewById(R.id.imagenFilt);
+            TextView tv=(TextView)vv.findViewById(R.id.nombreFilt);
+            iv.setImageBitmap(preview);
+            iv.setId(Id);
+            tv.setText(nombreFiltro);
+            if(!vista.contains(nombreFiltro)){
+                ll.addView(vv, posFilt ,new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
+                vista.add(nombreFiltro);}
+            posFilt++;}
     }
 
     private void borrarLoading(View v)
@@ -189,7 +198,7 @@ public class MainActivity extends ActionBarActivity {
 
         LinearLayout ll = (LinearLayout) findViewById(R.id.espaciofiltros);
         if(ll!=null && v!=null){
-        ll.removeView(v);}
+            ll.removeView(v);}
 
     }
     private View meterLoading()
@@ -198,12 +207,12 @@ public class MainActivity extends ActionBarActivity {
         View vv = View.inflate(this, R.layout.filt, null);
         if(ll!=null){
 
-        ImageView iv = (ImageView) vv.findViewById(R.id.imagenFilt);
-        TextView tv = (TextView) vv.findViewById(R.id.nombreFilt);
-        iv.setImageBitmap(loading);
-        tv.setText("Cargando...");
-        ll.addView(vv, new LinearLayout.LayoutParams(
-                ll.getLayoutParams().width, ll.getLayoutParams().height));}
+            ImageView iv = (ImageView) vv.findViewById(R.id.imagenFilt);
+            TextView tv = (TextView) vv.findViewById(R.id.nombreFilt);
+            iv.setImageBitmap(loading);
+            tv.setText("Cargando...");
+            ll.addView(vv, new LinearLayout.LayoutParams(
+                    ll.getLayoutParams().width, ll.getLayoutParams().height));}
         return vv;
 
 
@@ -221,40 +230,46 @@ public class MainActivity extends ActionBarActivity {
     {
         ImageFilters imgFilter = new ImageFilters();
 
+        PreparaBitmap dividedBm= new PreparaBitmap(escalar(src,true));
+        bim=new Bitmap[4];
+        bim[0]=dividedBm.getBm1();
+        bim[1]=dividedBm.getBm2();
+        bim[2]=dividedBm.getBm3();
+        bim[3]=dividedBm.getBm4();
 
         LinearLayout ll= (LinearLayout) findViewById(R.id.espaciofiltros);
         ll.removeAllViews();
         vista.clear();
         if(imgFiltered.containsKey("normal"))insertarEnFiltros("Normal",imgFiltered.get("normal"),0);
         else new ParaTask("normal")
-                .execute(new Params("normal", "Normal", src, 1.5, 0.6, 0.12, 100, 0, 0));
+                .execute(new Params(false,"normal", "Normal", thumbnail, 1.5, 0.6, 0.12, 100, 0, 0,contraste,brillo,saturacion));
         if(imgFiltered.containsKey("sepia"))insertarEnFiltros("Sepia",imgFiltered.get("sepia"),1);
         else new ParaTask("sepia")
-                .execute(new Params("sepia", "Sepia", src, 1.5, 0.6, 0.12, 100, 0, 1));
+                .execute(new Params(false,"sepia", "Sepia", thumbnail, 1.5, 0.6, 0.12, 100, 0, 1,contraste,brillo,saturacion));
         if(imgFiltered.containsKey("sharp"))insertarEnFiltros("Sharpen",imgFiltered.get("sharp"),5);
         else new ParaTask("sharp")
-                .execute(new Params("sharp", "Sharpen", src, 0, 0, 0, 9, 0, 5));
+                .execute(new Params(false,"sharp", "Sharpen", thumbnail, 0, 0, 0, 9, 0, 5,contraste,brillo,saturacion));
         if(imgFiltered.containsKey("inv"))insertarEnFiltros("Inversa",imgFiltered.get("inv"),3);
         else new ParaTask("inv")
-                .execute(new Params("inv", "Inversa", src, 0, 0, 0, 0, 0, 3));
+                .execute(new Params(false,"inv", "Inversa", thumbnail, 0, 0, 0, 0, 0, 3,contraste,brillo,saturacion));
         if(imgFiltered.containsKey("grey"))insertarEnFiltros("Gris",imgFiltered.get("grey"),4);
         else new ParaTask("grey")
-                .execute(new Params("grey", "Gris", src, 0, 0, 0, 0, 0, 4));
+                .execute(new Params(false,"grey", "Gris", thumbnail, 0, 0, 0, 0, 0, 4,contraste,brillo,saturacion));
         if(imgFiltered.containsKey("edetect"))insertarEnFiltros("Edge Detect",imgFiltered.get("edetect"),6);
         else new ParaTask("edetect")
-                .execute(new Params("edetect", "Edge Detect", src, 0, 0, 0, 100, 0, 6));
+                .execute(new Params(false,"edetect", "Edge Detect", thumbnail, 0, 0, 0, 100, 0, 6,contraste,brillo,saturacion));
         if(imgFiltered.containsKey("smooth"))insertarEnFiltros("Suavizado",imgFiltered.get("smooth"),7);
         else new ParaTask("smooth")
-                .execute(new Params("smooth", "Suavizado", src, 0, 0, 0, 100, 0, 7));
+                .execute(new Params(false,"smooth", "Suavizado", thumbnail, 0, 0, 0, 100, 0, 7,contraste,brillo,saturacion));
         if(imgFiltered.containsKey("emboss"))insertarEnFiltros("Emboss",imgFiltered.get("emboss"),8);
         else new ParaTask("emboss")
-                .execute(new Params("emboss", "Emboss", src, 0, 0, 0, 100, 0, 8));
+                .execute(new Params(false,"emboss", "Emboss", thumbnail, 0, 0, 0, 100, 0, 8,contraste,brillo,saturacion));
         if(imgFiltered.containsKey("gauss"))insertarEnFiltros("Gaussian",imgFiltered.get("gauss"),2);
         else new ParaTask("gauss")
-                .execute(new Params("gauss", "Gaussian", src, 0, 0, 0, 16, 0, 2));
+                .execute(new Params(false,"gauss", "Gaussian", thumbnail, 0, 0, 0, 16, 0, 2,contraste,brillo,saturacion));
         if(imgFiltered.containsKey("halo"))insertarEnFiltros("Halo",imgFiltered.get("halo"),9);
         else new ParaTask("halo")
-                .execute(new Params("halo", "Halo", src, 0, 0, 0, 9, 0, 9));
+                .execute(new Params(false,"halo", "Halo", thumbnail, 0, 0, 0, 9, 0, 9,contraste,brillo,saturacion));
 
     }
 
@@ -266,7 +281,7 @@ public class MainActivity extends ActionBarActivity {
         View vv;
         switch (tab) {
             case R.id.tab1:
-               // Toast.makeText(this, "Procesando vista previa...", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(this, "Procesando vista previa...", Toast.LENGTH_SHORT).show();
                 t1.setBackgroundColor(Color.parseColor("#80A7C2"));
                 t2.setBackgroundColor(Color.parseColor("#354D5E"));
                 t3.setBackgroundColor(Color.parseColor("#354D5E"));
@@ -313,7 +328,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         contant=contraste;
                         contraste=progressChanged-100;
-                        Bitmap bm= camibiarContrBrilloSat(showing,false);
+                        Bitmap bm= camibiarContrBrilloSat(showing,false,contraste,brillo,saturacion);
                         imgMain.setImageBitmap(bm);
                     }
                 });
@@ -334,7 +349,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         brillant=brillo;
                         brillo=progressChanged-100;
-                        Bitmap bm= camibiarContrBrilloSat(showing,false);
+                        Bitmap bm= camibiarContrBrilloSat(showing,false,contraste,brillo,saturacion);
                         imgMain.setImageBitmap(bm);
 
                     }
@@ -355,7 +370,7 @@ public class MainActivity extends ActionBarActivity {
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         satant=saturacion;
                         saturacion=progressChanged-40;
-                        Bitmap bm= camibiarContrBrilloSat(showing,false);
+                        Bitmap bm= camibiarContrBrilloSat(showing,false,contraste,brillo,saturacion);
                         imgMain.setImageBitmap(bm);
 
                     }
@@ -369,20 +384,20 @@ public class MainActivity extends ActionBarActivity {
                 ll.removeAllViews();
                 vv = View.inflate(this, R.layout.guardar, null);
                 ll.addView(vv, new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
-
+                //Profe -> Mejor un popup para introducir el nombre del archivo.
 
 
                 break;
         }
     }
 
-    private Bitmap camibiarContrBrilloSat(Bitmap vit, boolean loading)
+    private Bitmap camibiarContrBrilloSat(Bitmap vit, boolean loading,int cont,int brill,int sat)
     {
 
         ImageFilters imgFilter = new ImageFilters();
-        Bitmap bm = imgFilter.applySaturationFilter(vit, saturacion);
-        bm = imgFilter.applyContrastEffect(bm, contraste);
-        bm = imgFilter.applyBrightnessEffect(bm, brillo);
+        Bitmap bm = imgFilter.applySaturationFilter(vit, sat);
+        bm = imgFilter.applyContrastEffect(bm, cont);
+        bm = imgFilter.applyBrightnessEffect(bm, brill);
         if(!loading)contrasteBrillo=bm;
         return bm;
 
@@ -406,6 +421,13 @@ public class MainActivity extends ActionBarActivity {
         if(id!=R.id.btn_pick_img && id!=R.id.btn_apply_img && id!=R.id.btn_revert_img )// querra decir que hemos clickado a un filtro
         {
             contrasteBrillo=null;
+            Toast.makeText(this, "Procesando filtro...", Toast.LENGTH_SHORT).show();
+            PreparaBitmap dividedBm= new PreparaBitmap(src);
+            bim=new Bitmap[4];
+            bim[0]=dividedBm.getBm1();
+            bim[1]=dividedBm.getBm2();
+            bim[2]=dividedBm.getBm3();
+            bim[3]=dividedBm.getBm4();
 
         }
         if(id == R.id.btn_pick_img){
@@ -418,14 +440,17 @@ public class MainActivity extends ActionBarActivity {
         else if(id == R.id.btn_apply_img){
             posFilt=0;
             brillo=brillant=contraste=contant=saturacion=satant=1;
+
             if(contrasteBrillo!=null){
                 ultimo=src;
+
                 src=contrasteBrillo;
                 showing=src;
                 contrasteBrillo=null;
-                }
+            }
             else {
                 ultimo=src;
+
                 src=showing;}
             imgFiltered.clear();
             tabSelected(R.id.tab1);
@@ -435,12 +460,14 @@ public class MainActivity extends ActionBarActivity {
 
             if(!src.equals(showing) || contrasteBrillo!=null)
             {brillo=brillant=contraste=contant=saturacion=satant=1;
-            showing=src;
-            contrasteBrillo=null;
+                showing=src;
+
+                contrasteBrillo=null;
 
             }
             else
             {   src=ultimo;
+
                 showing=src;
                 contrasteBrillo=null;
 
@@ -456,92 +483,79 @@ public class MainActivity extends ActionBarActivity {
 
         else if(id==0) //Normal
         {
-            Bitmap img = imgFiltered.get("normal");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+
+            new ParaTask("normal").execute(new Params(true,"normal", "Normal", src, 1.5, 0.6, 0.12, 100, 0, 1,contraste,brillo,saturacion));
+
 
         }
         else if(id==1) //Sepia
         {
-            Bitmap img = imgFiltered.get("sepia");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+            new ParaTask("sepia").execute(new Params(true,"sepia", "Sepia", src, 1.5, 0.6, 0.12, 100, 0, 1,contraste,brillo,saturacion));
+
 
 
         }
         else if(id==2) //Gaussian blur
         {
-            Bitmap img = imgFiltered.get("gauss");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+            new ParaTask("gauss")
+                    .execute(new Params(true,"gauss", "Gaussian", src, 0, 0, 0, 16, 0, 2,contraste,brillo,saturacion));
+
+
 
         }
         else if(id==3) //inversa
         {
-            Bitmap img = imgFiltered.get("inv");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+            new ParaTask("inv")
+                    .execute(new Params(true,"inv", "Inversa", src, 0, 0, 0, 0, 0, 3,contraste,brillo,saturacion));
+
+
         }
         else if(id==4) //Grises
         {
-            Bitmap img = imgFiltered.get("grey");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+            new ParaTask("grey")
+                    .execute(new Params(true,"grey", "Gris", src, 0, 0, 0, 0, 0, 4,contraste,brillo,saturacion));
+
+
 
         }
         else if(id==5) //Sharp
         {
-            Bitmap img = imgFiltered.get("sharp");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+            new ParaTask("sharp")
+                    .execute(new Params(true,"sharp", "Sharpen", src, 0, 0, 0, 9, 0, 5,contraste,brillo,saturacion));
+
+
 
         }
         else if(id==6) //Edge detection
         {
-            Bitmap img = imgFiltered.get("edetect");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+            new ParaTask("edetect")
+                    .execute(new Params(true,"edetect", "Edge Detect", src, 0, 0, 0, 100, 0, 6,contraste,brillo,saturacion));
+
+
 
         }
         else if(id==7) //Suavizado
         {
-            Bitmap img = imgFiltered.get("smooth");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+            new ParaTask("smooth")
+                    .execute(new Params(true,"smooth", "Suavizado", src, 0, 0, 0, 100, 0, 7,contraste,brillo,saturacion));
+
+
 
         }
         else if(id==8) //Emboss
         {
-            Bitmap img = imgFiltered.get("emboss");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+            new ParaTask("emboss")
+                    .execute(new Params(true,"emboss", "Emboss", src, 0, 0, 0, 100, 0, 8,contraste,brillo,saturacion));
+
+
 
         }
-        else if(id==9) //Emboss
+        else if(id==9) //Halo
         {
-            Bitmap img = imgFiltered.get("halo");
-            if (img != null) {
-                imgMain.setImageBitmap(img);
-                showing=img;
-            }
+            new ParaTask("halo")
+                    .execute(new Params(true,"halo", "Halo", src, 0, 0, 0, 9, 0, 9,contraste,brillo,saturacion));
+
+
 
         }
 //        else if(v.getId() == R.id.effect_highlight)
@@ -612,7 +626,41 @@ public class MainActivity extends ActionBarActivity {
             saveBitmap(imgFilter.applyWaterMarkEffect(src, "kpbird.com", 200, 200, Color.GREEN, 80, 24, false),"effect_watermark");*/
 
     }
+    public Bitmap escalar(Bitmap img,boolean thumb)
+    {
 
+
+        try {
+
+
+
+            // The new size we want to scale to
+            int REQUIRED_SIZE;
+            if(thumb==true){
+                REQUIRED_SIZE = imgSize/4;}
+            else REQUIRED_SIZE = imgSize;
+
+            // Find the correct scale value. It should be the power of 2.
+            int width_tmp = img.getWidth(), height_tmp = img.getHeight();
+
+            while (true) {
+                if (width_tmp / 2 < REQUIRED_SIZE
+                        && height_tmp / 2 < REQUIRED_SIZE) {
+                    break;
+                }
+                width_tmp /= 2;
+                height_tmp /= 2;
+
+            }
+
+            // Decode with inSampleSize
+            return Bitmap.createScaledBitmap(img, width_tmp, height_tmp, false);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 
     @Override
@@ -622,8 +670,11 @@ public class MainActivity extends ActionBarActivity {
                 if(resultCode == RESULT_OK){
                     pathImagen = data.getData();
 
-                    Bitmap bmp = decodeUri(pathImagen);
+                    Bitmap bmp = decodeUri(pathImagen,false);
+                    Bitmap tbmp = escalar(bmp,true);
                     if(bmp !=null){
+                        thumbnail=tbmp;
+
                         src = bmp;
                         ultimo=src;
                         imgMain.setImageBitmap(src);
@@ -640,38 +691,49 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    public void dividirImagen(Bitmap img)
+    {
+
+        PreparaBitmap dividedBm= new PreparaBitmap(img);
+        bim=new Bitmap[4];
+        bim[0]=dividedBm.getBm1();
+        bim[1]=dividedBm.getBm2();
+        bim[2]=dividedBm.getBm3();
+        bim[3]=dividedBm.getBm4();
+    }
+
     public void guardarImagen(View v)
     {
         String extension;
-       EditText et= (EditText)findViewById(R.id.editText);
-       if(!et.getText().toString().replace(" ","").equals("")) {
-           if (!src.equals(showing) || contrasteBrillo != null) {
-               Toast.makeText(this, "Hay cambios sin aplicar", Toast.LENGTH_SHORT).show();
+        EditText et= (EditText)findViewById(R.id.editText);
+        if(!et.getText().toString().replace(" ","").equals("")) {
+            if (!src.equals(showing) || contrasteBrillo != null) {
+                Toast.makeText(this, "Hay cambios sin aplicar", Toast.LENGTH_SHORT).show();
 
-           } else {
-               try {
+            } else {
+                try {
 
-                  if(defaultFormat.equals(Bitmap.CompressFormat.PNG)) extension=".png";
-                  else extension=".jpeg";
-                   File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/" + et.getText().toString() + extension);
-                   FileOutputStream fos = new FileOutputStream(f);
-                   src.compress(defaultFormat, 90, fos);
+                    if(defaultFormat.equals(Bitmap.CompressFormat.PNG)) extension=".png";
+                    else extension=".jpeg";
+                    File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/" + et.getText().toString() + extension);
+                    FileOutputStream fos = new FileOutputStream(f);
+                    src.compress(defaultFormat, 90, fos);
 
-                   Toast.makeText(this, "Guardado correctamente en " + f.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-               } catch (Exception ex) {
-                   ex.printStackTrace();
-                   Toast.makeText(this, "Ha ocurrido un problema guardando", Toast.LENGTH_SHORT).show();
-               }
+                    Toast.makeText(this, "Guardado correctamente en " + f.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    Toast.makeText(this, "Ha ocurrido un problema guardando", Toast.LENGTH_SHORT).show();
+                }
 
-           }
-       }
+            }
+        }
         else
-       {
-           Toast.makeText(this, "Tienes que ponerle un nombre al archivo", Toast.LENGTH_SHORT).show();
-       }
+        {
+            Toast.makeText(this, "Tienes que ponerle un nombre al archivo", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    private Bitmap decodeUri(Uri selectedImage)  {
+    private Bitmap decodeUri(Uri selectedImage, boolean thumb)  {
 
         try {
 
@@ -681,19 +743,23 @@ public class MainActivity extends ActionBarActivity {
             BitmapFactory.decodeStream(getContentResolver().openInputStream(selectedImage), null, o);
 
             // The new size we want to scale to
-            final int REQUIRED_SIZE = imgSize;
+            int REQUIRED_SIZE;
+            if(thumb==true){
+                REQUIRED_SIZE = imgSize/4;}
+            else REQUIRED_SIZE = imgSize;
 
             // Find the correct scale value. It should be the power of 2.
             int width_tmp = o.outWidth, height_tmp = o.outHeight;
             int scale = 1;
             while (true) {
                 if (width_tmp / 2 < REQUIRED_SIZE
-                        || height_tmp / 2 < REQUIRED_SIZE) {
+                        && height_tmp / 2 < REQUIRED_SIZE) {
                     break;
                 }
                 width_tmp /= 2;
                 height_tmp /= 2;
-                scale *= 2;
+                scale *=2;
+
             }
 
             // Decode with inSampleSize
@@ -707,11 +773,51 @@ public class MainActivity extends ActionBarActivity {
         return null;
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private class Pair {
         String tipo;
         String label;
-        Bitmap bm;
+        Bitmap bm,bm1,bm2,bm3,bm4;
         int id;
+        boolean procesa;
+
+        public Bitmap getBm1() {
+            return bm1;
+        }
+
+        public Bitmap getBm2() {
+            return bm2;
+        }
+
+        public Bitmap getBm3() {
+            return bm3;
+        }
+
+        public Bitmap getBm4() {
+            return bm4;
+        }
 
         public String getLabel() {
             return label;
@@ -727,16 +833,23 @@ public class MainActivity extends ActionBarActivity {
         public int getId() {
             return id;
         }
+        public boolean isProcesa(){return procesa;}
 
-        public Pair(String label, String tipo, Bitmap bm,int id) {
+        public Pair(String label, String tipo, Bitmap bm,int id,boolean proc) {
             super();
             this.label = label;
             this.bm = bm;
             this.tipo = tipo;
             this.id=id;
+            this.procesa=proc;
+
         }
 
+
+
     }
+
+
 
     private class ParaTask extends AsyncTask<Params, Void, Pair> {
         private View load;
@@ -747,7 +860,7 @@ public class MainActivity extends ActionBarActivity {
 
         }
         protected Pair doInBackground(Params... arg0) {
-            long startTime = System.currentTimeMillis();
+
             ImageFilters imgFilter = new ImageFilters();
             Bitmap bm = arg0[0].getBm();
             String tipo = arg0[0].getTipo();
@@ -758,60 +871,64 @@ public class MainActivity extends ActionBarActivity {
             float percent = arg0[0].getPercent();
             double valor = arg0[0].getValor();
             int id = arg0[0].getId();
-            Bitmap result = null;
-            if (imgFiltered.containsKey(tipo))
-                return new Pair(label, tipo, null,id);
+            Bitmap result = Bitmap.createBitmap(bm.getWidth(),bm.getHeight(),Bitmap.Config.ARGB_8888) ;
 
-            switch (tipo) {
+            if (imgFiltered.containsKey(tipo)&&arg0[0].isProcesa()==false)
+                return new Pair(label, tipo, null,id,arg0[0].isProcesa());
 
-                case "sepia":
-                    result = imgFilter.applySepiaToningEffect(bm, valor,R,G,B);
-                    break;
-                case "gauss":
-                    result = imgFilter.applyGaussianBlurEffect(bm,valor);
-                    break;
-                case "halo":
-                    result = imgFilter.applyGaussianBlurEffect(bm,valor);
-                    break;
-                case "inv":
-                    result = imgFilter.applyInvertEffect(bm);
-                    break;
-                case "grey":
-                    result = imgFilter.applyGreyscaleEffect(bm);
-                    break;
-                case "sharp":
-                    result = imgFilter.applySharpenEffect(bm);
-                    break;
-                case "edetect":
-                    result = imgFilter.applyEdgeDetectionEffect(bm);
-                    break;
-                case "smooth":
-                    result = imgFilter.applySmoothEffect(bm,valor);
-                    break;
-                case "emboss":
-                    result = imgFilter.applyEmbossEffect(bm);
-                    break;
+            Thread[] parteMatriz = new Thread[4];
+            long startTime = System.currentTimeMillis();
+            SecuenciaHilos orden=new SecuenciaHilos();
+            Runnable task1 = new Hilo(arg0[0],bim[0],result,1,orden);
+            Runnable task2 = new Hilo(arg0[0],bim[1],result,2,orden);
+            Runnable task3 = new Hilo(arg0[0],bim[2],result,3,orden);
+            Runnable task4 = new Hilo(arg0[0],bim[3],result,4,orden);
+            Thread parte1 = new Thread(task1, "Parte-"+1);
+            Thread parte2 = new Thread(task2, "Parte-"+2);
+            Thread parte3 = new Thread(task3, "Parte-"+3);
+            Thread parte4 = new Thread(task4, "Parte-"+4);
+            //4,2,3,1
+            try{
+            parte4.start();
+            parte4.join();
+            parte2.start();
+            parte2.join();
+            parte3.start();
+            parte3.join();
+            parte1.start();
+            parte1.join();
 
-                default:
-                    result=bm;
+
 
             }
-            if(contraste!=1 || brillo!=1 || saturacion!=1)result=camibiarContrBrilloSat(result,true);
-            imgFiltered.put(tipo, result);
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+
             long stopTime = System.currentTimeMillis();
             long elapsedTime = stopTime - startTime;
+
+            imgFiltered.put(tipo, result);
+
             System.out.println("Filtro: "+label+" Tiempo:"+elapsedTime);
 
 
-            return new Pair(label, tipo, result,id);
+            return new Pair(label, tipo, result,id,arg0[0].isProcesa());
         }
 
         protected void onPostExecute(Pair result) {
             // Pass the result data back to the main activity
-            if (result != null){
+            if (result != null && result.isProcesa()==false){
                 borrarLoading(load);
                 insertarEnFiltros(result.getLabel(),
                         imgFiltered.get(result.getTipo()),result.getId());}
+            else if(result !=null &&  result.isProcesa()==true)
+            {
+                imgMain.setImageBitmap(result.getBm());
+                showing=result.getBm();
+                Toast.makeText(getApplicationContext(), "Procesado", Toast.LENGTH_SHORT).show();
+            }
 
         }
         protected  void onPreExecute()
