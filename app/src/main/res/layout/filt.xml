@@ -16,6 +16,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center|center_vertical"
-        android:textColor="#0B3C5E"/>
+        android:textColor="#80A7C2"/>
 
 </LinearLayout>

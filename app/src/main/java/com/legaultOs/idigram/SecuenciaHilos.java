@@ -3,13 +3,11 @@ package com.legaultOs.idigram;
 /**
  * Created by Legault on 04/05/2015.
  */
-public class SecuenciaHilos
-{
-    boolean primero,segundo,tercero,cuarto;
+public class SecuenciaHilos {
+    boolean primero, segundo, tercero, cuarto;
 
-    public SecuenciaHilos()
-    {
-        primero=segundo=tercero=cuarto=false;
+    public SecuenciaHilos() {
+        primero = segundo = tercero = cuarto = false;
 
     }
 

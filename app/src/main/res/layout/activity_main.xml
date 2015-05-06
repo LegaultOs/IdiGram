@@ -75,7 +75,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_weight="0.33"
-                    android:background="@drawable/forma"
+                    android:background="@drawable/forma2"
                     android:clickable="true"
                     android:gravity="center"
                     android:onClick="tabClicked"
@@ -94,7 +94,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_weight="0.33"
-                    android:background="@drawable/forma"
+                    android:background="@drawable/forma2"
                     android:clickable="true"
                     android:gravity="center"
                     android:onClick="tabClicked"
@@ -113,7 +113,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
                     android:layout_weight="0.33"
-                    android:background="@drawable/forma"
+                    android:background="@drawable/forma2"
                     android:clickable="true"
                     android:gravity="center"
                     android:onClick="tabClicked"
@@ -125,7 +125,8 @@
                 android:layout_width="fill_parent"
                 android:layout_height="160dp"
                 android:layout_below="@+id/tab1"
-                android:orientation="vertical" >
+                android:orientation="vertical"
+                android:background="@drawable/forma">
 
 
             </LinearLayout>
