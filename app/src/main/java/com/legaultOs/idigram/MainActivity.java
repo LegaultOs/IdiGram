@@ -29,8 +29,10 @@ import android.widget.Toast;
 
 import com.example.legault.idigram.R;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -38,6 +40,7 @@ import java.util.HashMap;
 public class MainActivity extends ActionBarActivity {
 
     private static final int SELECT_PHOTO = 100;
+    private static final int  SELECT_SHARE=200;
     int posFilt;
     private ImageView imgMain;
     private Bitmap src, showing, contrasteBrillo, loading, ultimo, thumbnail, ultimoThu;
@@ -741,6 +744,13 @@ public class MainActivity extends ActionBarActivity {
                         tabSelected(R.id.tab1);
                     }
                 }
+                break;
+            case SELECT_SHARE:
+                //Toast.makeText(this, "Compartido correctamente!", Toast.LENGTH_SHORT).show();
+
+
+
+                break;
         }
     }
 
@@ -756,6 +766,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void guardarImagen(View v) {
         String extension;
+        AlertDialog.Builder al = new AlertDialog.Builder(this);
         EditText et = (EditText) findViewById(R.id.editText);
         if (!et.getText().toString().replace(" ", "").equals("")) {
             if (!src.equals(showing) || contrasteBrillo != null) {
@@ -771,6 +782,24 @@ public class MainActivity extends ActionBarActivity {
                     src.compress(defaultFormat, 90, fos);
 
                     Toast.makeText(this, "Guardado correctamente en " + f.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+
+                    al
+                            .setTitle("Compartir")
+                            .setMessage("Quieres compartir la foto guardada?")
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    share();
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // do nothing
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_menu_share)
+                            .show();
+
+
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     Toast.makeText(this, "Ha ocurrido un problema guardando", Toast.LENGTH_SHORT).show();
@@ -781,6 +810,31 @@ public class MainActivity extends ActionBarActivity {
             Toast.makeText(this, "Tienes que ponerle un nombre al archivo", Toast.LENGTH_SHORT).show();
         }
     }
+
+    private void share(){
+        Bitmap icon = src;
+        String extension;
+        Intent share = new Intent(Intent.ACTION_SEND);
+        if (defaultFormat.equals(Bitmap.CompressFormat.PNG)) extension = "png";
+        else extension = "jpeg";
+        share.setType("image/"+extension);
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        icon.compress(defaultFormat, 90, bytes);
+        File f = new File(Environment.getExternalStorageDirectory() + File.separator + "idi_gram_share."+extension);
+        try {
+            f.createNewFile();
+            FileOutputStream fo = new FileOutputStream(f);
+            fo.write(bytes.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file:///sdcard/idi_gram_share."+extension));
+
+        startActivityForResult(Intent.createChooser(share, "Share Image"), SELECT_SHARE);
+
+    }
+
 
     private Bitmap decodeUri(Uri selectedImage, boolean thumb) {
 
@@ -952,8 +1006,8 @@ public class MainActivity extends ActionBarActivity {
             } else if (result != null && result.isProcesa() == true) {
                 imgMain.setImageBitmap(result.getBm());
                 if (!result.getTipo().equals("")) showing = result.getBm();
-                else contrasteBrillo = result.getBm();
-               // Toast.makeText(getApplicationContext(), "Procesado", Toast.LENGTH_SHORT).show();
+                else{ contrasteBrillo = result.getBm();
+               Toast.makeText(getApplicationContext(), "Procesado", Toast.LENGTH_SHORT).show();}
             }
 
         }
