@@ -1,6 +1,7 @@
 package com.legaultOs.idigram;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,6 +24,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -451,7 +454,7 @@ public class MainActivity extends ActionBarActivity {
                     }
                 });
                 SeekBar sb3 = (SeekBar) findViewById(R.id.seekBar3);//Brillo
-                sb3.setProgress(saturacion + 49);
+                sb3.setProgress(saturacion + 50);
                 sb3.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     int progressChanged = 50;
 
@@ -486,7 +489,7 @@ public class MainActivity extends ActionBarActivity {
                 ll.removeAllViews();
                 vv = View.inflate(this, R.layout.guardar, null);
                 ll.addView(vv, new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
-                //Profe -> Mejor un popup para introducir el nombre del archivo.
+
                 EditText tv = (EditText) findViewById(R.id.editText);
                 tv.requestFocusFromTouch();
 
@@ -554,8 +557,9 @@ public class MainActivity extends ActionBarActivity {
 
                 src = showing;
             }
+            Toast.makeText(getApplicationContext(), "Cambios aplicados", Toast.LENGTH_SHORT).show();
             imgFiltered.clear();
-            tabSelected(R.id.tab1);
+            if(findViewById(R.id.guardarImagen)==null)tabSelected(R.id.tab1);
 
         } else if (id == R.id.btn_revert_img) {
             lastFilter = "normal";
@@ -936,6 +940,9 @@ public class MainActivity extends ActionBarActivity {
     private class ParaTask extends AsyncTask<Params, Void, Pair> {
         private View load;
         private String nombreEtiqueta;
+        private double progress=0;
+        ProgressDialog barProgressDialog=null;
+
 
         public ParaTask(String label) {
             nombreEtiqueta = label;
@@ -946,6 +953,7 @@ public class MainActivity extends ActionBarActivity {
 
             ImageFilters imgFilter = new ImageFilters();
             Bitmap bm = arg0[0].getBm();
+            Log.d("Ancho imagen antes",Integer.toString(bm.getWidth()));
             String tipo = arg0[0].getTipo();
             String label = arg0[0].getLabel();
             double R = arg0[0].getR();
@@ -954,18 +962,24 @@ public class MainActivity extends ActionBarActivity {
             float percent = arg0[0].getPercent();
             double valor = arg0[0].getValor();
             int id = arg0[0].getId();
-            Bitmap result = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), Bitmap.Config.ARGB_8888);
+            Bitmap partes[]=new Bitmap[4];
+
+            partes[0] = Bitmap.createBitmap(bim[0].getWidth(), bim[0].getHeight(), Bitmap.Config.ARGB_8888);
+            partes[1] = Bitmap.createBitmap(bim[1].getWidth(), bim[1].getHeight(), Bitmap.Config.ARGB_8888);
+            partes[2] = Bitmap.createBitmap(bim[2].getWidth(), bim[2].getHeight(), Bitmap.Config.ARGB_8888);
+            partes[3] = Bitmap.createBitmap(bim[3].getWidth(), bim[3].getHeight(), Bitmap.Config.ARGB_8888);
+            //Bitmap result = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), Bitmap.Config.ARGB_8888);
 
             if (imgFiltered.containsKey(tipo) && arg0[0].isProcesa() == false)
                 return new Pair(label, tipo, null, id, arg0[0].isProcesa());
 
-            Thread[] parteMatriz = new Thread[4];
+
             long startTime = System.currentTimeMillis();
-            SecuenciaHilos orden = new SecuenciaHilos();
-            Runnable task1 = new Hilo(arg0[0], bim[0], result, 1, orden);
-            Runnable task2 = new Hilo(arg0[0], bim[1], result, 2, orden);
-            Runnable task3 = new Hilo(arg0[0], bim[2], result, 3, orden);
-            Runnable task4 = new Hilo(arg0[0], bim[3], result, 4, orden);
+
+            Runnable task1 = new Hilo(arg0[0], bim[0], partes[0], 1, barProgressDialog);
+            Runnable task2 = new Hilo(arg0[0], bim[1], partes[1], 2, barProgressDialog);
+            Runnable task3 = new Hilo(arg0[0], bim[2], partes[2], 3, barProgressDialog);
+            Runnable task4 = new Hilo(arg0[0], bim[3], partes[3], 4, barProgressDialog);
             Thread parte1 = new Thread(task1, "Parte-" + 1);
             Thread parte2 = new Thread(task2, "Parte-" + 2);
             Thread parte3 = new Thread(task3, "Parte-" + 3);
@@ -973,21 +987,28 @@ public class MainActivity extends ActionBarActivity {
             //4,2,3,1
             try {
                 parte4.start();
-                parte4.join();
+
                 parte2.start();
-                parte2.join();
+
                 parte3.start();
-                parte3.join();
+
                 parte1.start();
+                parte4.join();
+                parte2.join();
+                parte3.join();
                 parte1.join();
 
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            PreparaBitmap pBm= new PreparaBitmap(bm,partes[0],partes[1],partes[2],partes[3]);
+            Bitmap result =pBm.joinBm();
+            Log.d("Ancho imagen despues",Integer.toString(result.getWidth()));
+           // Bitmap result =partes[0];
             long stopTime = System.currentTimeMillis();
             long elapsedTime = stopTime - startTime;
+
 
             imgFiltered.put(label, result);
 
@@ -1015,8 +1036,23 @@ public class MainActivity extends ActionBarActivity {
         protected void onPreExecute() {
             if (!imgFiltered.containsKey(nombreEtiqueta) && !nombreEtiqueta.equals(""))
                 load = meterLoading();
-            else
-                Toast.makeText(getApplicationContext(), "Procesando...", Toast.LENGTH_SHORT).show();
+            else{
+                barProgressDialog = new ProgressDialog(MainActivity.this);
+
+                barProgressDialog.setTitle("Procesando imagen...");
+
+                barProgressDialog.setMessage("Procesando ...");
+
+                barProgressDialog.setProgressStyle(barProgressDialog.STYLE_HORIZONTAL);
+
+                barProgressDialog.setProgress(0);
+
+                barProgressDialog.setMax(100);
+
+                barProgressDialog.show();
+
+            }
+                //Toast.makeText(getApplicationContext(), "Procesando...", Toast.LENGTH_SHORT).show();
 
         }
 

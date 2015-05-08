@@ -16,6 +16,14 @@ public class PreparaBitmap {
 
     }
 
+    public PreparaBitmap(Bitmap bm,Bitmap bm1, Bitmap bm2, Bitmap bm3, Bitmap bm4) {
+        this.bm1 = bm1;
+        this.bm2 = bm2;
+        this.bm3 = bm3;
+        this.bm4 = bm4;
+        this.bm = bm;
+    }
+
     public Bitmap getBm1() {
         return bm1;
     }
@@ -39,11 +47,17 @@ public class PreparaBitmap {
         int ancho1 = ancho / 2;
         int alto1 = alto / 2;
         int pixelColor, A, R, G, B;
-        Bitmap resultado = Bitmap.createBitmap(bm1.getWidth() + bm2.getWidth(), bm1.getHeight() + bm3.getHeight(), Bitmap.Config.ARGB_8888);
-//1
-        for (int i = 0; i < ancho1; i++) {
-            for (int j = 0; j < alto1; j++) {
-                pixelColor = bm1.getPixel(i, j);
+        int xIni, xFin, yIni, yFin;
+        Bitmap resultado = Bitmap.createBitmap(bm.getWidth(), bm.getHeight(), Bitmap.Config.ARGB_8888);
+
+        xIni = (bm.getWidth() / 2) - 4;
+        xFin = bm.getWidth();
+        yIni = (bm.getHeight() / 2) - 4;
+        yFin = bm.getHeight();
+
+        for (int x = xIni; x < xFin; x++) {
+            for (int y = yIni; y < yFin; y++) {
+                pixelColor = bm4.getPixel(x - xIni, y - yIni);
                 // saving alpha channel
                 A = Color.alpha(pixelColor);
                 // inverting byte for each R/G/B channel
@@ -51,15 +65,20 @@ public class PreparaBitmap {
                 G = Color.green(pixelColor);
                 B = Color.blue(pixelColor);
 
-                resultado.setPixel(i, j, Color.argb(A, R, G, B));
+                resultado.setPixel(x, y, Color.argb(A, R, G, B));
 
             }
 
         }
-//2
-        for (int i = ancho1; i < ancho; i++) {
-            for (int j = 0; j < alto1; j++) {
-                pixelColor = bm2.getPixel(i - ancho1, j);
+
+        xIni = (bm.getWidth() / 2) - 4;
+        xFin = bm.getWidth();
+        yIni =0;
+        yFin = bm.getHeight()/2;
+
+        for (int x = xIni; x < xFin; x++) {
+            for (int y = yIni; y < yFin; y++) {
+                pixelColor = bm2.getPixel(x - xIni, y - yIni);
                 // saving alpha channel
                 A = Color.alpha(pixelColor);
                 // inverting byte for each R/G/B channel
@@ -67,16 +86,20 @@ public class PreparaBitmap {
                 G = Color.green(pixelColor);
                 B = Color.blue(pixelColor);
 
-                resultado.setPixel(i, j, Color.argb(A, R, G, B));
-
+                resultado.setPixel(x, y, Color.argb(A, R, G, B));
 
             }
 
         }
-//3
-        for (int i = 0; i < ancho1; i++) {
-            for (int j = alto1; j < alto; j++) {
-                pixelColor = bm3.getPixel(i, j - alto1);
+
+        xIni = 0;
+        xFin = (bm.getWidth() / 2) + 4;
+        yIni = (bm.getHeight() / 2) - 4;
+        yFin = bm.getHeight();
+
+        for (int x = xIni; x < xFin; x++) {
+            for (int y = yIni; y < yFin; y++) {
+                pixelColor = bm3.getPixel(x - xIni, y - yIni);
                 // saving alpha channel
                 A = Color.alpha(pixelColor);
                 // inverting byte for each R/G/B channel
@@ -84,15 +107,20 @@ public class PreparaBitmap {
                 G = Color.green(pixelColor);
                 B = Color.blue(pixelColor);
 
-                resultado.setPixel(i, j, Color.argb(A, R, G, B));
+                resultado.setPixel(x, y, Color.argb(A, R, G, B));
 
             }
 
         }
-//4
-        for (int i = ancho1; i < ancho; i++) {
-            for (int j = alto1; j < alto; j++) {
-                pixelColor = bm4.getPixel(i - ancho1, j - alto1);
+
+        xIni = 0;
+        xFin = (bm.getWidth()/ 2) + 4;
+        yIni = 0;
+        yFin = (bm.getHeight()/ 2) + 4;
+
+        for (int x = xIni; x < xFin; x++) {
+            for (int y = yIni; y < yFin; y++) {
+                pixelColor = bm1.getPixel(x - xIni, y - yIni);
                 // saving alpha channel
                 A = Color.alpha(pixelColor);
                 // inverting byte for each R/G/B channel
@@ -100,11 +128,13 @@ public class PreparaBitmap {
                 G = Color.green(pixelColor);
                 B = Color.blue(pixelColor);
 
-                resultado.setPixel(i, j, Color.argb(A, R, G, B));
+                resultado.setPixel(x, y, Color.argb(A, R, G, B));
 
             }
 
         }
+
+
 
 
         return resultado;
