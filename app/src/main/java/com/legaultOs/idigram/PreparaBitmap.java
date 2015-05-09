@@ -16,7 +16,7 @@ public class PreparaBitmap {
 
     }
 
-    public PreparaBitmap(Bitmap bm,Bitmap bm1, Bitmap bm2, Bitmap bm3, Bitmap bm4) {
+    public PreparaBitmap(Bitmap bm, Bitmap bm1, Bitmap bm2, Bitmap bm3, Bitmap bm4) {
         this.bm1 = bm1;
         this.bm2 = bm2;
         this.bm3 = bm3;
@@ -73,8 +73,8 @@ public class PreparaBitmap {
 
         xIni = (bm.getWidth() / 2) - 4;
         xFin = bm.getWidth();
-        yIni =0;
-        yFin = bm.getHeight()/2;
+        yIni = 0;
+        yFin = bm.getHeight() / 2;
 
         for (int x = xIni; x < xFin; x++) {
             for (int y = yIni; y < yFin; y++) {
@@ -114,9 +114,9 @@ public class PreparaBitmap {
         }
 
         xIni = 0;
-        xFin = (bm.getWidth()/ 2) + 4;
+        xFin = (bm.getWidth() / 2) + 4;
         yIni = 0;
-        yFin = (bm.getHeight()/ 2) + 4;
+        yFin = (bm.getHeight() / 2) + 4;
 
         for (int x = xIni; x < xFin; x++) {
             for (int y = yIni; y < yFin; y++) {
@@ -133,8 +133,6 @@ public class PreparaBitmap {
             }
 
         }
-
-
 
 
         return resultado;

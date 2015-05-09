@@ -1,20 +1,15 @@
 package com.legaultOs.idigram;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.legault.idigram.R;
@@ -52,6 +47,7 @@ public class Welcome extends ActionBarActivity {
         inflater.inflate(R.menu.menu_main2, menu);
         return super.onCreateOptionsMenu(menu);
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
@@ -89,6 +85,7 @@ public class Welcome extends ActionBarActivity {
                     Toast.makeText(this, "Procesando vista previa...", Toast.LENGTH_LONG).show();
 
                     startActivity(i);
+                    //finish();
                 }
         }
     }

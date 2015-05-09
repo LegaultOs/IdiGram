@@ -24,7 +24,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -43,7 +42,7 @@ import java.util.HashMap;
 public class MainActivity extends ActionBarActivity {
 
     private static final int SELECT_PHOTO = 100;
-    private static final int  SELECT_SHARE=200;
+    private static final int SELECT_SHARE = 200;
     int posFilt;
     private ImageView imgMain;
     private Bitmap src, showing, contrasteBrillo, loading, ultimo, thumbnail, ultimoThu;
@@ -128,7 +127,7 @@ public class MainActivity extends ActionBarActivity {
             case R.id.about:
                 al
                         .setTitle("About")
-                        .setMessage("Hecho por: Oscar Carod \nE-mail:oscaracso90@gmail.com \nIDI")
+                        .setMessage("Hecho por: Oscar Carod \nE-mail: oscaracso90@gmail.com \nAsignatura: IDI")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // continue with delete
@@ -171,6 +170,27 @@ public class MainActivity extends ActionBarActivity {
                 return true;
         }
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder al = new AlertDialog.Builder(this);
+        al
+                .setTitle("Salir")
+                .setMessage("Seguro que quieres salir al menú principal? \n(Los cambios no se guardarán)")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+
+                    }
+                }).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+
     }
 
     private void insertarEnFiltros(String nombreFiltro, Bitmap preview, int Id) {
@@ -359,7 +379,7 @@ public class MainActivity extends ActionBarActivity {
         TextView t1 = (TextView) findViewById(R.id.tab1);
         TextView t2 = (TextView) findViewById(R.id.tab2);
         TextView t3 = (TextView) findViewById(R.id.tab3);
-        InputMethodManager imm = (InputMethodManager)this.getSystemService(Service.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) this.getSystemService(Service.INPUT_METHOD_SERVICE);
         View vv;
         switch (tab) {
             case R.id.tab1:
@@ -367,8 +387,8 @@ public class MainActivity extends ActionBarActivity {
                 t1.setBackgroundColor(Color.parseColor("#354D5E"));
                 t2.setBackgroundColor(Color.parseColor("#80A7C2"));
                 t3.setBackgroundColor(Color.parseColor("#80A7C2"));
-                if(this.getCurrentFocus()!=null)
-                imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
+                if (this.getCurrentFocus() != null)
+                    imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
 
                 ll.removeAllViews();
 
@@ -393,7 +413,7 @@ public class MainActivity extends ActionBarActivity {
                 t1.setBackgroundColor(Color.parseColor("#80A7C2"));
                 t2.setBackgroundColor(Color.parseColor("#354D5E"));
                 t3.setBackgroundColor(Color.parseColor("#80A7C2"));
-                if(this.getCurrentFocus()!=null)
+                if (this.getCurrentFocus() != null)
                     imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
                 ll.removeAllViews();
                 vv = View.inflate(this, R.layout.ajustes, null);
@@ -493,7 +513,7 @@ public class MainActivity extends ActionBarActivity {
                 EditText tv = (EditText) findViewById(R.id.editText);
                 tv.requestFocusFromTouch();
 
-                imm.showSoftInput(tv,0);
+                imm.showSoftInput(tv, 0);
 
                 break;
         }
@@ -559,7 +579,7 @@ public class MainActivity extends ActionBarActivity {
             }
             Toast.makeText(getApplicationContext(), "Cambios aplicados", Toast.LENGTH_SHORT).show();
             imgFiltered.clear();
-            if(findViewById(R.id.guardarImagen)==null)tabSelected(R.id.tab1);
+            if (findViewById(R.id.guardarImagen) == null) tabSelected(R.id.tab1);
 
         } else if (id == R.id.btn_revert_img) {
             lastFilter = "normal";
@@ -753,7 +773,6 @@ public class MainActivity extends ActionBarActivity {
                 //Toast.makeText(this, "Compartido correctamente!", Toast.LENGTH_SHORT).show();
 
 
-
                 break;
         }
     }
@@ -815,17 +834,17 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private void share(){
+    private void share() {
         Bitmap icon = src;
         String extension;
         Intent share = new Intent(Intent.ACTION_SEND);
         if (defaultFormat.equals(Bitmap.CompressFormat.PNG)) extension = "png";
         else extension = "jpeg";
-        share.setType("image/"+extension);
+        share.setType("image/" + extension);
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         icon.compress(defaultFormat, 90, bytes);
-        File f = new File(Environment.getExternalStorageDirectory() + File.separator + "idi_gram_share."+extension);
+        File f = new File(Environment.getExternalStorageDirectory() + File.separator + "idi_gram_share." + extension);
         try {
             f.createNewFile();
             FileOutputStream fo = new FileOutputStream(f);
@@ -833,7 +852,7 @@ public class MainActivity extends ActionBarActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file:///sdcard/idi_gram_share."+extension));
+        share.putExtra(Intent.EXTRA_STREAM, Uri.parse("file:///sdcard/idi_gram_share." + extension));
 
         startActivityForResult(Intent.createChooser(share, "Share Image"), SELECT_SHARE);
 
@@ -938,10 +957,9 @@ public class MainActivity extends ActionBarActivity {
 
 
     private class ParaTask extends AsyncTask<Params, Void, Pair> {
+        ProgressDialog barProgressDialog = null;
         private View load;
         private String nombreEtiqueta;
-        private double progress=0;
-        ProgressDialog barProgressDialog=null;
 
 
         public ParaTask(String label) {
@@ -953,7 +971,7 @@ public class MainActivity extends ActionBarActivity {
 
             ImageFilters imgFilter = new ImageFilters();
             Bitmap bm = arg0[0].getBm();
-            Log.d("Ancho imagen antes",Integer.toString(bm.getWidth()));
+            Log.d("Ancho imagen antes", Integer.toString(bm.getWidth()));
             String tipo = arg0[0].getTipo();
             String label = arg0[0].getLabel();
             double R = arg0[0].getR();
@@ -962,7 +980,7 @@ public class MainActivity extends ActionBarActivity {
             float percent = arg0[0].getPercent();
             double valor = arg0[0].getValor();
             int id = arg0[0].getId();
-            Bitmap partes[]=new Bitmap[4];
+            Bitmap partes[] = new Bitmap[4];
 
             partes[0] = Bitmap.createBitmap(bim[0].getWidth(), bim[0].getHeight(), Bitmap.Config.ARGB_8888);
             partes[1] = Bitmap.createBitmap(bim[1].getWidth(), bim[1].getHeight(), Bitmap.Config.ARGB_8888);
@@ -1002,10 +1020,10 @@ public class MainActivity extends ActionBarActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            PreparaBitmap pBm= new PreparaBitmap(bm,partes[0],partes[1],partes[2],partes[3]);
-            Bitmap result =pBm.joinBm();
-            Log.d("Ancho imagen despues",Integer.toString(result.getWidth()));
-           // Bitmap result =partes[0];
+            PreparaBitmap pBm = new PreparaBitmap(bm, partes[0], partes[1], partes[2], partes[3]);
+            Bitmap result = pBm.joinBm();
+            Log.d("Ancho imagen despues", Integer.toString(result.getWidth()));
+            // Bitmap result =partes[0];
             long stopTime = System.currentTimeMillis();
             long elapsedTime = stopTime - startTime;
 
@@ -1027,8 +1045,10 @@ public class MainActivity extends ActionBarActivity {
             } else if (result != null && result.isProcesa() == true) {
                 imgMain.setImageBitmap(result.getBm());
                 if (!result.getTipo().equals("")) showing = result.getBm();
-                else{ contrasteBrillo = result.getBm();
-               Toast.makeText(getApplicationContext(), "Procesado", Toast.LENGTH_SHORT).show();}
+                else {
+                    contrasteBrillo = result.getBm();
+                    Toast.makeText(getApplicationContext(), "Procesado", Toast.LENGTH_SHORT).show();
+                }
             }
 
         }
@@ -1036,7 +1056,7 @@ public class MainActivity extends ActionBarActivity {
         protected void onPreExecute() {
             if (!imgFiltered.containsKey(nombreEtiqueta) && !nombreEtiqueta.equals(""))
                 load = meterLoading();
-            else{
+            else {
                 barProgressDialog = new ProgressDialog(MainActivity.this);
 
                 barProgressDialog.setTitle("Procesando imagen...");
@@ -1052,7 +1072,7 @@ public class MainActivity extends ActionBarActivity {
                 barProgressDialog.show();
 
             }
-                //Toast.makeText(getApplicationContext(), "Procesando...", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), "Procesando...", Toast.LENGTH_SHORT).show();
 
         }
 

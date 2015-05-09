@@ -21,7 +21,7 @@ public class Hilo implements Runnable {
         this.aProcesar = proc;
         this.r = result;
         cuad = cuadrante;
-        barra=barraProgreso;
+        barra = barraProgreso;
 
         switch (cuadrante) {
             case 1:
@@ -101,15 +101,15 @@ public class Hilo implements Runnable {
                 result = aProcesar;
 
         }
-if(barra!=null)        barra.incrementProgressBy(10);
+        if (barra != null) barra.incrementProgressBy(10);
 
-            if (p.getSaturacion() != 10)    result = imgFilter.applySaturationFilter(result, p.getSaturacion());
-            if (p.getContraste() != 1 )result = imgFilter.applyContrastEffect(result, p.getContraste());
-            if (p.getBrillo() != 1 )result = imgFilter.applyBrightnessEffect(result, p.getBrillo());
+        if (p.getSaturacion() != 10)
+            result = imgFilter.applySaturationFilter(result, p.getSaturacion());
+        if (p.getContraste() != 1) result = imgFilter.applyContrastEffect(result, p.getContraste());
+        if (p.getBrillo() != 1) result = imgFilter.applyBrightnessEffect(result, p.getBrillo());
 
 
-
-        if(barra!=null)      barra.incrementProgressBy(10);
+        if (barra != null) barra.incrementProgressBy(10);
 
 
         int pixelColor, A, R, G, B;
@@ -117,7 +117,7 @@ if(barra!=null)        barra.incrementProgressBy(10);
 
         for (int x = 0; x < result.getWidth(); x++) {
             for (int y = 0; y < result.getHeight(); y++) {
-                pixelColor = result.getPixel(x , y );
+                pixelColor = result.getPixel(x, y);
                 // saving alpha channel
                 A = Color.alpha(pixelColor);
                 // inverting byte for each R/G/B channel
@@ -130,8 +130,10 @@ if(barra!=null)        barra.incrementProgressBy(10);
 
         }
 
-        if(barra!=null){     barra.incrementProgressBy(5);
-        if(barra.getProgress()==barra.getMax())barra.dismiss();}
+        if (barra != null) {
+            barra.incrementProgressBy(5);
+            if (barra.getProgress() == barra.getMax()) barra.dismiss();
+        }
 
         //2,4,1,3
         //4,2,3,1

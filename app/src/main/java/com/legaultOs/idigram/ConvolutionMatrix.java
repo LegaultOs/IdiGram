@@ -19,7 +19,7 @@ public class ConvolutionMatrix {
         Matrix = new double[size][size];
     }
 
-    public static Bitmap computeConvolution3x3(Bitmap src, ConvolutionMatrix matrix) {
+    public static Bitmap computeConvolution(Bitmap src, ConvolutionMatrix matrix) {
         int width = src.getWidth();
         int height = src.getHeight();
         Bitmap result = Bitmap.createBitmap(width, height, src.getConfig());
@@ -31,20 +31,20 @@ public class ConvolutionMatrix {
         for (int y = 0; y < height - 2; ++y) {
             for (int x = 0; x < width - 2; ++x) {
 
-                // get pixel matrix
+                // obtenemos la matriz de pixeles
                 for (int i = 0; i < SIZE; ++i) {
                     for (int j = 0; j < SIZE; ++j) {
                         pixels[i][j] = src.getPixel(x + i, y + j);
                     }
                 }
 
-                // get alpha of center pixel
+                // obtenemos el Alpha del pixel del medio
                 A = Color.alpha(pixels[1][1]);
 
-                // init color sum
+                // inicializamos la suma de colores
                 sumR = sumG = sumB = 0;
 
-                // get sum of RGB on matrix
+                // obtenemos el RGB de la matriz
                 for (int i = 0; i < SIZE; ++i) {
                     for (int j = 0; j < SIZE; ++j) {
                         sumR += (Color.red(pixels[i][j]) * matrix.Matrix[i][j]);
@@ -53,7 +53,7 @@ public class ConvolutionMatrix {
                     }
                 }
 
-                // get final Red
+                // Calculamos como quedaria el rojo
                 R = (int) (sumR / matrix.Factor + matrix.Offset);
                 if (R < 0) {
                     R = 0;
@@ -61,7 +61,7 @@ public class ConvolutionMatrix {
                     R = 255;
                 }
 
-                // get final Green
+                // Calculamos como quedaria el verde
                 G = (int) (sumG / matrix.Factor + matrix.Offset);
                 if (G < 0) {
                     G = 0;
@@ -69,7 +69,7 @@ public class ConvolutionMatrix {
                     G = 255;
                 }
 
-                // get final Blue
+                // Calculamos como quedaria el azul
                 B = (int) (sumB / matrix.Factor + matrix.Offset);
                 if (B < 0) {
                     B = 0;
@@ -82,7 +82,7 @@ public class ConvolutionMatrix {
             }
         }
 
-        // final image
+        // devolvemos la imagen modificada
         return result;
     }
 
