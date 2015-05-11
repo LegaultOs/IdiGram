@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -49,6 +50,7 @@ public class MainActivity extends ActionBarActivity {
     private static final int SELECT_SHARE = 200;
     int posFilt;
     private ImageView imgMain;
+    private Button revertButton;
     private Bitmap src, showing, contrasteBrillo, loading, ultimo, thumbnail, ultimoThu;
     private HashMap<String, Bitmap> imgFiltered;
     private HashMap<String, Params> Parametros;
@@ -69,6 +71,8 @@ public class MainActivity extends ActionBarActivity {
         File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/");
         if (!f.exists()) f.mkdir();
         imgMain = (ImageView) findViewById(R.id.effect_main);
+        revertButton = (Button) findViewById(R.id.btn_revert_img);
+        revertButton.setEnabled(false);
         pathImagen = (Uri) bundle.get("pathImagen");
         src = decodeUri(pathImagen, false);
 
@@ -447,6 +451,7 @@ public class MainActivity extends ActionBarActivity {
                         temp.setContraste(contraste);
                         temp.setProcesa(true);
                         new ParaTask("").execute(temp);
+                        revertButton.setEnabled(true);
                     }
                 });
 
@@ -474,6 +479,7 @@ public class MainActivity extends ActionBarActivity {
                         temp.setProcesa(true);
                         temp.setBrillo(brillo);
                         new ParaTask("").execute(temp);
+                        revertButton.setEnabled(true);
 
                     }
                 });
@@ -501,6 +507,7 @@ public class MainActivity extends ActionBarActivity {
                         temp.setProcesa(true);
                         temp.setSaturacion(saturacion);
                         new ParaTask("").execute(temp);
+                        revertButton.setEnabled(true);
 
                     }
                 });
@@ -553,6 +560,7 @@ public class MainActivity extends ActionBarActivity {
         if (id != R.id.btn_pick_img && id != R.id.btn_apply_img && id != R.id.btn_revert_img)// querra decir que hemos clickado a un filtro
         {
             contrasteBrillo = null;
+            revertButton.setEnabled(true);
             //Toast.makeText(this, "Procesando filtro...", Toast.LENGTH_SHORT).show();
             dividirImagen(src);
 
@@ -562,6 +570,7 @@ public class MainActivity extends ActionBarActivity {
             Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
             photoPickerIntent.setType("image/*");
             startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+
 
 
         } else if (id == R.id.btn_apply_img) {
@@ -593,12 +602,13 @@ public class MainActivity extends ActionBarActivity {
                 showing = src;
 
                 contrasteBrillo = null;
-
+                if(src.equals(ultimo))revertButton.setEnabled(false);
             } else {
                 src = ultimo;
 
                 showing = src;
                 contrasteBrillo = null;
+                revertButton.setEnabled(false);
 
             }
 
@@ -770,6 +780,7 @@ public class MainActivity extends ActionBarActivity {
                         satant = saturacion = 10;
                         lastFilter = "normal";
                         tabSelected(R.id.tab1);
+                        revertButton.setEnabled(false);
                     }
                 }
                 break;
