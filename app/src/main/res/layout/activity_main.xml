@@ -72,7 +72,7 @@
                 <TextView
                     android:id="@+id/tab1"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="25dp"
                     android:layout_alignParentLeft="true"
                     android:layout_weight="0.33"
                     android:background="@drawable/forma2"
@@ -91,7 +91,7 @@
                 <TextView
                     android:id="@+id/tab2"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="25dp"
                     android:layout_alignParentLeft="true"
                     android:layout_weight="0.33"
                     android:background="@drawable/forma2"
@@ -110,7 +110,7 @@
                 <TextView
                     android:id="@+id/tab3"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="25dp"
                     android:layout_alignParentLeft="true"
                     android:layout_weight="0.33"
                     android:background="@drawable/forma2"

@@ -2,14 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/guardarImagen">
+    android:id="@+id/guardarImagen"
+    android:padding="10dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Nombre de la imagen"
-        android:layout_marginTop="20dp"
-        android:id="@+id/textView" />
+        android:layout_marginTop="0dp"
+        android:id="@+id/textView"
+        android:textColor="#80A7C2"/>
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -18,12 +20,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/editText"
-        android:layout_weight="0.7"/>
+        android:layout_weight="0.7"
+        android:textColor="#80A7C2"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Guardar"
+        android:text="Confirmar"
         android:onClick="guardarImagen"
         android:id="@+id/button"
         />

@@ -1,5 +1,9 @@
 package com.legaultOs.idigram;
 
+/**
+ * Created by Legault on 20/04/2015.
+ */
+
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.Service;
