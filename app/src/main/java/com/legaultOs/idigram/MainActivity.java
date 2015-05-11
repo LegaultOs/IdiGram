@@ -562,7 +562,11 @@ public class MainActivity extends ActionBarActivity {
             contrasteBrillo = null;
             revertButton.setEnabled(true);
             //Toast.makeText(this, "Procesando filtro...", Toast.LENGTH_SHORT).show();
+
             dividirImagen(src);
+
+
+
 
 
         }
@@ -1036,7 +1040,12 @@ public class MainActivity extends ActionBarActivity {
                 e.printStackTrace();
             }
             PreparaBitmap pBm = new PreparaBitmap(bm, partes[0], partes[1], partes[2], partes[3]);
+
+
             Bitmap result = pBm.joinBm();
+            if(barProgressDialog!=null)barProgressDialog.incrementProgressBy(4);
+
+
             Log.d("Ancho imagen despues", Integer.toString(result.getWidth()));
             // Bitmap result =partes[0];
             long stopTime = System.currentTimeMillis();
@@ -1053,6 +1062,7 @@ public class MainActivity extends ActionBarActivity {
 
         protected void onPostExecute(Pair result) {
             // Pass the result data back to the main activity
+
             if (result != null && result.isProcesa() == false) {
                 borrarLoading(load);
                 insertarEnFiltros(result.getLabel(),
@@ -1062,9 +1072,11 @@ public class MainActivity extends ActionBarActivity {
                 if (!result.getTipo().equals("")) showing = result.getBm();
                 else {
                     contrasteBrillo = result.getBm();
+
                     Toast.makeText(getApplicationContext(), "Procesado", Toast.LENGTH_SHORT).show();
                 }
             }
+            if(barProgressDialog!=null)barProgressDialog.dismiss();
 
         }
 

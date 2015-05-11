@@ -13,8 +13,9 @@ public class Hilo implements Runnable {
     Params p;
     Bitmap aProcesar, r;
     int xIni, xFin, yIni, yFin, cuad;
-    SecuenciaHilos ord;
+
     ProgressDialog barra;
+
 
     public Hilo(Params parametros, Bitmap proc, Bitmap result, int cuadrante, ProgressDialog barraProgreso) {
         this.p = parametros;
@@ -56,49 +57,33 @@ public class Hilo implements Runnable {
     public void run() {
         ImageFilters imgFilter = new ImageFilters();
         Bitmap result = null;
-        switch (p.getTipo()) {
-
-            case "sepia":
-                result = imgFilter.applySepiaToningEffect(aProcesar, p.getValor(), p.getR(), p.getG(), p.getB());
-                break;
-            case "gauss":
-                result = imgFilter.applyGaussianBlurEffect(aProcesar, p.getValor());
-                break;
-            case "halo":
-                result = imgFilter.applyGaussianBlurEffect(aProcesar, p.getValor());
-                break;
-            case "inv":
-                result = imgFilter.applyInvertEffect(aProcesar);
-                break;
-            case "grey":
-                result = imgFilter.applyGreyscaleEffect(aProcesar);
-                break;
-            case "sharp":
-                result = imgFilter.applySharpenEffect(aProcesar);
-                break;
-            case "edetect":
-                result = imgFilter.applyEdgeDetectionEffect(aProcesar);
-                break;
-            case "smooth":
-                result = imgFilter.applySmoothEffect(aProcesar, p.getValor());
-                break;
-            case "emboss":
-                result = imgFilter.applyEmbossEffect(aProcesar);
-                break;
-//----------------------------------
 
 
-            case "filtroColor":
-                result = imgFilter.applyColorFilterEffect(aProcesar, p.getR(), p.getG(), p.getB());
-                break;
-
-            case "engrave":
-                result = imgFilter.applyEngraveEffect(aProcesar);
-                break;
-
-
-            default:
-                result = aProcesar;
+        if (p.getTipo().equals("sepia")) {
+            result = imgFilter.applySepiaToningEffect(aProcesar, p.getValor(), p.getR(), p.getG(), p.getB());
+        } else if (p.getTipo().equals("gauss")) {
+            result = imgFilter.applyGaussianBlurEffect(aProcesar, p.getValor());
+        } else if (p.getTipo().equals("halo")) {
+            result = imgFilter.applyGaussianBlurEffect(aProcesar, p.getValor());
+        } else if (p.getTipo().equals("inv")) {
+            result = imgFilter.applyInvertEffect(aProcesar);
+        } else if (p.getTipo().equals("grey")) {
+            result = imgFilter.applyGreyscaleEffect(aProcesar);
+        } else if (p.getTipo().equals("sharp")) {
+            result = imgFilter.applySharpenEffect(aProcesar);
+        } else if (p.getTipo().equals("edetect")) {
+            result = imgFilter.applyEdgeDetectionEffect(aProcesar);
+        } else if (p.getTipo().equals("smooth")) {
+            result = imgFilter.applySmoothEffect(aProcesar, p.getValor());
+        } else if (p.getTipo().equals("emboss")) {
+            result = imgFilter.applyEmbossEffect(aProcesar);
+        }
+        else if (p.getTipo().equals("filtroColor")) {
+            result = imgFilter.applyColorFilterEffect(aProcesar, p.getR(), p.getG(), p.getB());
+        } else if (p.getTipo().equals("engrave")) {
+            result = imgFilter.applyEngraveEffect(aProcesar);
+        } else {
+            result = aProcesar;
 
         }
         if (barra != null) barra.incrementProgressBy(10);
@@ -131,8 +116,8 @@ public class Hilo implements Runnable {
         }
 
         if (barra != null) {
-            barra.incrementProgressBy(5);
-            if (barra.getProgress() == barra.getMax()) barra.dismiss();
+            barra.incrementProgressBy(4);
+            // if (barra.getProgress() == barra.getMax()) barra.dismiss();
         }
 
         //2,4,1,3
