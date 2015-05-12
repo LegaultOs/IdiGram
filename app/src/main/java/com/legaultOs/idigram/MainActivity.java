@@ -395,6 +395,9 @@ public class MainActivity extends ActionBarActivity {
                 t1.setBackgroundColor(Color.parseColor("#354D5E"));
                 t2.setBackgroundColor(Color.parseColor("#80A7C2"));
                 t3.setBackgroundColor(Color.parseColor("#80A7C2"));
+                t1.setTextColor(Color.parseColor("#80A7C2"));
+                t2.setTextColor(Color.BLACK);
+                t3.setTextColor(Color.BLACK);
                 if (this.getCurrentFocus() != null)
                     imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
 
@@ -421,6 +424,9 @@ public class MainActivity extends ActionBarActivity {
                 t1.setBackgroundColor(Color.parseColor("#80A7C2"));
                 t2.setBackgroundColor(Color.parseColor("#354D5E"));
                 t3.setBackgroundColor(Color.parseColor("#80A7C2"));
+                t1.setTextColor(Color.BLACK);
+                t2.setTextColor(Color.parseColor("#80A7C2"));
+                t3.setTextColor(Color.BLACK);
                 if (this.getCurrentFocus() != null)
                     imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
                 ll.removeAllViews();
@@ -445,7 +451,7 @@ public class MainActivity extends ActionBarActivity {
                         contraste = progressChanged - 100;
                         /*Bitmap bm= camibiarContrBrilloSat(showing,false,contraste,brillo,saturacion);
                         imgMain.setImageBitmap(bm);*/
-                        dividirImagen(src);
+                       // dividirImagen(src);
                         Params temp = Parametros.get(lastFilter);
                         temp.setBm(src);
                         temp.setContraste(contraste);
@@ -473,7 +479,7 @@ public class MainActivity extends ActionBarActivity {
                         brillo = progressChanged - 100;
                         /*Bitmap bm= camibiarContrBrilloSat(showing,false,contraste,brillo,saturacion);
                         imgMain.setImageBitmap(bm);*/
-                        dividirImagen(src);
+                       // dividirImagen(src);
                         Params temp = Parametros.get(lastFilter);
                         temp.setBm(src);
                         temp.setProcesa(true);
@@ -501,7 +507,7 @@ public class MainActivity extends ActionBarActivity {
                         saturacion = progressChanged - 40;
                        /* Bitmap bm= camibiarContrBrilloSat(showing,false,contraste,brillo,saturacion);
                         imgMain.setImageBitmap(bm);*/
-                        dividirImagen(src);
+                      //  dividirImagen(src);
                         Params temp = Parametros.get(lastFilter);
                         temp.setBm(src);
                         temp.setProcesa(true);
@@ -517,6 +523,9 @@ public class MainActivity extends ActionBarActivity {
                 t1.setBackgroundColor(Color.parseColor("#80A7C2"));
                 t2.setBackgroundColor(Color.parseColor("#80A7C2"));
                 t3.setBackgroundColor(Color.parseColor("#354D5E"));
+                t2.setTextColor(Color.BLACK);
+                t3.setTextColor(Color.parseColor("#80A7C2"));
+                t1.setTextColor(Color.BLACK);
                 ll.removeAllViews();
                 vv = View.inflate(this, R.layout.guardar, null);
                 ll.addView(vv, new LinearLayout.LayoutParams(ll.getLayoutParams().width, ll.getLayoutParams().height));
@@ -563,7 +572,7 @@ public class MainActivity extends ActionBarActivity {
             revertButton.setEnabled(true);
             //Toast.makeText(this, "Procesando filtro...", Toast.LENGTH_SHORT).show();
 
-            dividirImagen(src);
+//dividirImagen(src);
 
 
 
@@ -1097,6 +1106,8 @@ public class MainActivity extends ActionBarActivity {
                 barProgressDialog.setMax(100);
 
                 barProgressDialog.show();
+
+                dividirImagen(src);
 
             }
             //Toast.makeText(getApplicationContext(), "Procesando...", Toast.LENGTH_SHORT).show();
