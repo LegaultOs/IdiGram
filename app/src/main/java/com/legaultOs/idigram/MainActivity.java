@@ -38,6 +38,7 @@ import com.example.legault.idigram.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -814,9 +815,33 @@ public class MainActivity extends ActionBarActivity {
         bim[2] = dividedBm.getBm3();
         bim[3] = dividedBm.getBm4();
     }
+    public void confirmado (File f) throws FileNotFoundException {
+        FileOutputStream fos = new FileOutputStream(f);
+        src.compress(defaultFormat, 90, fos);
+        AlertDialog.Builder al = new AlertDialog.Builder(this);
+        Toast.makeText(this, "Guardado correctamente en " + f.getAbsolutePath(), Toast.LENGTH_SHORT).show();
 
+        al
+                .setTitle("Compartir")
+                .setMessage("Quieres compartir la foto guardada?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        share();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_menu_share)
+                .show();
+
+
+    }
     public void guardarImagen(View v) {
         String extension;
+        final File f;
         AlertDialog.Builder al = new AlertDialog.Builder(this);
         EditText et = (EditText) findViewById(R.id.editText);
         if (!et.getText().toString().replace(" ", "").equals("")) {
@@ -828,27 +853,35 @@ public class MainActivity extends ActionBarActivity {
 
                     if (defaultFormat.equals(Bitmap.CompressFormat.PNG)) extension = ".png";
                     else extension = ".jpeg";
-                    File f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/" + et.getText().toString() + extension);
-                    FileOutputStream fos = new FileOutputStream(f);
-                    src.compress(defaultFormat, 90, fos);
+                    f = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/IDIGram/" + et.getText().toString() + extension);
+                    if(f.exists())
+                    {
 
-                    Toast.makeText(this, "Guardado correctamente en " + f.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                        al
+                                .setTitle("Alerta")
+                                .setMessage("Ya existe un fichero con ese nombre, quieres sobreescribirlo?")
+                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        try {
+                                            confirmado(f);
+                                        } catch (FileNotFoundException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                })
+                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // do nothing
+                                    }
+                                })
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .show();
 
-                    al
-                            .setTitle("Compartir")
-                            .setMessage("Quieres compartir la foto guardada?")
-                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    share();
-                                }
-                            })
-                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // do nothing
-                                }
-                            })
-                            .setIcon(android.R.drawable.ic_menu_share)
-                            .show();
+
+                    }
+                    else confirmado(f);
+
+
 
 
                 } catch (Exception ex) {
